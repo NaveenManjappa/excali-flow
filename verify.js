@@ -139,7 +139,10 @@ vm.runInContext(scriptCode, sandbox);
 sandbox.initStudioDOM();
 const app = sandbox.window;
 assert(app.state.elements.length > 0, 'Initial template should populate elements');
-console.log('[PASS] 1. Zero syntax or runtime initialization errors (initial scene loaded)');
+assert.strictEqual(app.createElement('rectangle').fillStyle, 'none', 'New shapes default to no fill, like Excalidraw');
+assert.strictEqual(app.createElement('arrow').curveType, 'straight', 'New arrows default to straight');
+assert.strictEqual(app.createElement('sticky').fillStyle, 'solid', 'Sticky notes keep a solid fill');
+console.log('[PASS] 1. Zero syntax or runtime initialization errors (initial scene loaded, Excalidraw-style defaults)');
 
 // 2. Verify Zero-Bleed Analytical Hachure & Cross-Hatch Clipping + ctx.clip(paths.fillPath)
 for (const fillStyle of ['hachure', 'cross-hatch']) {
@@ -639,6 +642,72 @@ function apiReq(method, url, { body, headers = {} } = {}) {
   assert.strictEqual(ws.canvasId, 'Getting Started copy', 'Save as copy must switch to the new canvas');
   assert(JSON.parse((await store.readCanvas('My Project', 'Getting Started copy')).text).elements.some(e => e.id === 'ws_after'), 'Save as copy must keep local edits');
   console.log('[PASS] 9. Client workspace: starter canvas, autosave dirtiness (camera excluded), switch-saves, undo reset, conflict reload/copy verified');
+
+  // 10. Flow modes None/Aurora, canvas backgrounds, Excalidraw-style defaults, letter shortcuts
+  assert.strictEqual(app.parseSceneJson('{"elements":[],"appState":{"flowMode":"none"}}').appState.flowMode, 'none', 'flowMode "none" must survive parsing');
+  assert.strictEqual(app.parseSceneJson('{"elements":[],"appState":{"flowMode":"aurora"}}').appState.flowMode, 'aurora', 'flowMode "aurora" must survive parsing');
+  assert.strictEqual(app.parseSceneJson('{"elements":[],"appState":{"viewBackgroundColor":"red;x"}}').appState.viewBackgroundColor, undefined, 'Non-hex backgrounds must be dropped');
+
+  const flowA = app.createElement('rectangle', { id: 'flow_A', x: 0, y: 0, width: 100, height: 60 });
+  const flowB = app.createElement('rectangle', { id: 'flow_B', x: 500, y: 0, width: 100, height: 60 });
+  const flowArrow = app.createElement('arrow', {
+    id: 'flow_AB', x: 100, y: 30, x2: 500, y2: 30,
+    startBinding: { elementId: 'flow_A', focusAngle: 0, gap: 4 },
+    endBinding: { elementId: 'flow_B', focusAngle: Math.PI, gap: 4 }
+  });
+  app.state.elements = [flowA, flowB, flowArrow];
+  app.state.activePulses = [];
+  app.state.flowEnabled = true;
+  const countArcs = mode => {
+    app.state.flowMode = mode;
+    const c = createMockCtx();
+    app.renderScenePasses(c, 1.3, { canvasBg: '#ffffff' });
+    return c.calls.filter(x => x.fn === 'arc').length;
+  };
+  assert(countArcs('comets') > 0, 'Comets mode must draw particles');
+  assert.strictEqual(countArcs('none'), 0, 'Flow mode "none" must draw no ambient particles');
+  assert(app.triggerNodePulse('flow_A') > 0, 'Pulse bursts must still spawn in "none" mode');
+
+  for (const bg of ['#ffffff', '#000000']) {
+    const c = createMockCtx();
+    const styles = [];
+    let composite = 'source-over';
+    Object.defineProperty(c, 'globalCompositeOperation', { get: () => composite, set: v => { composite = v; } });
+    const origStroke = c.stroke;
+    c.stroke = function (p) { styles.push({ color: this.strokeStyle, composite }); origStroke.call(this, p); };
+    app.drawFlowParticleAt(c, app.getArrowGeometry(flowArrow), 200, 0.5, '#171717', 2.2, 'aurora', bg);
+    assert(new Set(styles.map(s => s.color)).size > 3, `Aurora trail must blend warm→cool colors on ${bg}`);
+    assert.strictEqual(styles.some(s => s.composite === 'lighter'), bg === '#000000', `Aurora must glow additively only on dark canvases (${bg})`);
+  }
+
+  assert.strictEqual(app.isDarkBackground('#000000'), true);
+  assert.strictEqual(app.isDarkBackground('#1e1e1e'), true);
+  assert.strictEqual(app.isDarkBackground('#fffce8'), false);
+  app.setCanvasBackground('#FFFCE8');
+  assert.strictEqual(app.state.canvasBg, '#fffce8', 'Preset backgrounds must be applied (normalized to lowercase)');
+  app.setCanvasBackground('javascript:alert(1)');
+  assert.strictEqual(app.state.canvasBg, '#ffffff', 'Invalid backgrounds must fall back to white');
+
+  // Dark theme is separate from the background color, like Excalidraw (invert(93%) hue-rotate(180deg))
+  assert.strictEqual(app.state.theme, 'light', 'Theme defaults to light');
+  const keyBeforeTheme = app.sceneContentKey();
+  app.handleKeyDown({ key: 'Î', code: 'KeyD', altKey: true, shiftKey: true });
+  assert.strictEqual(app.state.theme, 'dark', 'Alt+Shift+D must toggle dark theme');
+  assert.strictEqual(app.state.canvasBg, '#ffffff', 'Dark theme must not change the stored background');
+  assert.strictEqual(app.getEffectiveCanvasBg(), '#121212', 'White renders as #121212 in dark theme');
+  assert(app.isDarkBackground(app.applyDarkThemeFilter('#fffce8')), 'Light presets render dark in dark theme');
+  assert.strictEqual(app.sceneContentKey(), keyBeforeTheme, 'Toggling the theme must not make the canvas dirty');
+  app.toggleTheme();
+  assert.strictEqual(app.getEffectiveCanvasBg(), '#ffffff', 'Light theme renders the background as-is');
+
+
+  for (const [k, tool] of Object.entries({ v: 'select', r: 'rectangle', d: 'diamond', o: 'ellipse', a: 'arrow', p: 'freedraw', t: 'text', n: 'sticky', e: 'eraser', h: 'hand' })) {
+    app.handleKeyDown({ key: k });
+    assert.strictEqual(app.state.activeTool, tool, `Letter shortcut '${k}' should activate '${tool}'`);
+  }
+  app.setTool('select');
+  app.state.flowMode = 'comets';
+  console.log('[PASS] 10. Flow None/Aurora (light & dark), canvas background presets & validation, letter shortcuts verified');
 
   console.log('\nALL EXCALIFLOW VERIFICATION CHECKS PASSED SUCCESSFULLY!');
 })().catch(err => {
