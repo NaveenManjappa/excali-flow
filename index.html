@@ -399,7 +399,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease, left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #leftSidebar.collapsed {
@@ -415,6 +415,252 @@
     #leftSidebar::-webkit-scrollbar-thumb {
       background: var(--divider);
       border-radius: 4px;
+    }
+
+    body.projects-open #leftSidebar {
+      left: 256px;
+    }
+
+    /* Projects Panel (#projectsPanel) - Projects → Canvases tree backed by server.js /api */
+    #projectsPanel {
+      position: fixed;
+      top: 64px;
+      left: 12px;
+      max-height: calc(100vh - 132px);
+      width: 232px;
+      z-index: 19;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease;
+    }
+
+    #projectsPanel.collapsed {
+      transform: translateX(-260px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .pp-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 2px 0 6px;
+    }
+
+    .pp-title {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pp-meta {
+      flex: 1;
+      min-width: 0;
+      font-size: 11px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pp-head .ui-btn {
+      height: 26px;
+      padding: 0 8px;
+    }
+
+    .pp-notice {
+      display: none;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      background: var(--surface-subtle);
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      padding: 8px 9px;
+    }
+
+    .pp-notice.show {
+      display: block;
+    }
+
+    .pp-notice code {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+    }
+
+    .pp-tree {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .pp-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 4px 0 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .pp-row:hover {
+      background: var(--surface-hover);
+      color: var(--text-primary);
+    }
+
+    .pp-project-row {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .pp-canvas-row {
+      padding-left: 24px;
+    }
+
+    .pp-canvas-row.active {
+      background: var(--surface-active);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pp-chevron {
+      width: 10px;
+      font-size: 9px;
+      color: var(--text-muted);
+      transition: transform 0.12s ease;
+    }
+
+    .pp-project.open .pp-chevron {
+      transform: rotate(90deg);
+    }
+
+    .pp-canvases {
+      display: none;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .pp-project.open .pp-canvases {
+      display: flex;
+    }
+
+    .pp-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pp-time,
+    .pp-count {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .pp-actions {
+      display: none;
+      gap: 1px;
+    }
+
+    .pp-row:hover .pp-actions {
+      display: inline-flex;
+    }
+
+    .pp-row:hover .pp-time,
+    .pp-row:hover .pp-count {
+      display: none;
+    }
+
+    .pp-act {
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .pp-act:hover {
+      background: var(--panel-bg);
+      color: var(--text-primary);
+    }
+
+    .pp-act.danger:hover {
+      color: var(--danger);
+    }
+
+    .pp-empty {
+      padding: 4px 6px 4px 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Header breadcrumb: Project / Canvas + save status */
+    .canvas-crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      max-width: 300px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .crumb-project {
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .crumb-canvas {
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-primary);
+      font-weight: 600;
+      padding: 0 6px;
+    }
+
+    .save-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin: 0 4px 0 2px;
+      background: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .save-dot.saved { background: var(--emerald); }
+    .save-dot.saving,
+    .save-dot.unsaved { background: #f59e0b; }
+    .save-dot.conflict,
+    .save-dot.error { background: var(--danger); }
+
+    /* Conflict bar: canvas file changed on disk underneath us */
+    #conflictBar {
+      position: fixed;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 36;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 6px 6px 14px;
+      font-size: 12px;
+    }
+
+    #conflictBar.show {
+      display: flex;
     }
 
     .sidebar-section {
@@ -643,6 +889,9 @@
       <button id="sidebarToggleBtn" class="ui-btn" title="Toggle Properties Panel (⌘\)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
+      <button id="projectsToggleBtn" class="ui-btn" title="Toggle Projects Panel (⌘⇧O)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </button>
       <div class="brand-badge">
         <span class="brand-icon">E</span>
         <span>Excaliflow</span>
@@ -659,6 +908,13 @@
           <button class="ui-btn menu-item" data-template="RAG Pipeline"><span>RAG Pipeline</span><span style="opacity:0.5">5 nodes</span></button>
           <button class="ui-btn menu-item" data-template="Microservices"><span>Microservices</span><span style="opacity:0.5">6 nodes</span></button>
         </div>
+      </div>
+      <div class="v-divider"></div>
+      <div id="canvasCrumb" class="canvas-crumb">
+        <span id="crumbProject" class="crumb-project">Scratch</span>
+        <span>/</span>
+        <button id="crumbCanvas" class="ui-btn crumb-canvas" title="Rename canvas">Unsaved canvas</button>
+        <span id="saveStatusDot" class="save-dot scratch" title="Scratch canvas — not saved to a file"></span>
       </div>
     </div>
 
@@ -733,15 +989,34 @@
           <button id="btnCopyPng" class="ui-btn menu-item"><span>Copy 2x PNG</span><span>⌘⇧C</span></button>
           <button id="btnRecordVideo" class="ui-btn menu-item"><span>Record 60fps Video</span><span>.webm</span></button>
           <div class="menu-sep"></div>
-          <button id="btnSaveJson" class="ui-btn menu-item"><span>Save Scene</span><span>JSON</span></button>
-          <button id="btnLoadJson" class="ui-btn menu-item"><span>Load Scene</span><span>Open</span></button>
-          <input type="file" id="jsonFileInput" accept=".json,.excaliflow,.excalidraw" style="display:none" />
+          <button id="btnSaveJson" class="ui-btn menu-item"><span>Export .excaliflow</span><span>⌘S</span></button>
+          <button id="btnLoadJson" class="ui-btn menu-item"><span>Import as Canvas</span><span>Open</span></button>
+          <input type="file" id="jsonFileInput" accept=".json,.excaliflow,.excalidraw" multiple style="display:none" />
           <div class="menu-sep"></div>
           <button id="btnClearScene" class="ui-btn menu-item danger"><span>Clear Canvas</span><span>⌫</span></button>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- Projects Panel (#projectsPanel): workspace folders → .excaliflow canvases -->
+  <aside id="projectsPanel" class="glass-panel collapsed" aria-label="Projects">
+    <div class="pp-head">
+      <span class="pp-title">Projects</span>
+      <span id="ppWorkspaceName" class="pp-meta"></span>
+      <button id="ppNewProjectBtn" class="ui-btn" title="New project">+ New</button>
+    </div>
+    <div id="ppNotice" class="pp-notice"></div>
+    <div id="ppTree" class="pp-tree"></div>
+  </aside>
+
+  <!-- Conflict Bar: the open canvas file changed on disk -->
+  <div id="conflictBar" class="glass-panel" role="alert">
+    <span>This canvas changed on disk.</span>
+    <button id="conflictReloadBtn" class="ui-btn">Reload from disk</button>
+    <button id="conflictOverwriteBtn" class="ui-btn danger">Overwrite</button>
+    <button id="conflictCopyBtn" class="ui-btn primary">Save as copy</button>
+  </div>
 
   <!-- Left Properties Inspector (#leftSidebar) -->
   <aside id="leftSidebar" class="glass-panel">
@@ -1035,7 +1310,21 @@
       pasteCount: 0,
       drag: null,
       editingId: null,
-      isSpacePanning: false
+      isSpacePanning: false,
+      projectsPanelOpen: false,
+      // Open canvas file in the server-backed workspace (section 17); store is null in scratch mode
+      workspace: {
+        store: null,
+        tree: null,
+        projectId: null,
+        canvasId: null,
+        lastSavedKey: null,
+        lastSavedModified: null,
+        status: 'scratch',
+        saving: null,
+        retryAt: 0,
+        expanded: new Set()
+      }
     };
 
     /* -------------------------------------------------------------------------
@@ -4056,6 +4345,16 @@
         toggleSidebar();
         return;
       }
+      if (meta && key === 's') {
+        e.preventDefault?.();
+        saveNow();
+        return;
+      }
+      if (meta && e.shiftKey && key === 'o') {
+        e.preventDefault?.();
+        toggleProjectsPanel();
+        return;
+      }
       if (meta && key === 'z') {
         e.preventDefault?.();
         if (e.shiftKey) redo();
@@ -4318,9 +4617,8 @@
       }, 1000 / 60);
     }
 
-    function exportExcalidrawJson() {
-      closeAllDropdowns();
-      const payload = {
+    function serializeScene() {
+      return {
         type: 'excaliflow',
         version: 2,
         source: 'Excaliflow',
@@ -4335,61 +4633,100 @@
           flowSpeed: state.flowSpeed
         }
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      downloadBlob(blob, 'diagram.excaliflow');
-      showToast('Saved diagram.excaliflow');
+    }
+
+    function exportExcalidrawJson() {
+      closeAllDropdowns();
+      const filename = `${state.workspace.canvasId || 'diagram'}.excaliflow`;
+      const blob = new Blob([JSON.stringify(serializeScene(), null, 2)], { type: 'application/json' });
+      downloadBlob(blob, filename);
+      showToast(`Saved ${filename}`);
+    }
+
+    // Validates untrusted scene JSON (.excaliflow / .excalidraw) into { elements, appState }, or null.
+    // appState only carries fields that passed validation; camera is present only when complete.
+    function parseSceneJson(jsonString) {
+      try {
+        const data = JSON.parse(jsonString);
+        if (!data || !Array.isArray(data.elements)) return null;
+        const validRaw = data.elements.filter(
+          el => el && !el.isDeleted && typeof el.type === 'string' && ALLOWED_ELEMENT_TYPES.has(el.type)
+        );
+        const elements = validRaw.map(el => {
+          const normType = el.type === 'line' ? 'arrow' : el.type;
+          let resolvedX2 = el.x2;
+          let resolvedY2 = el.y2;
+          if (normType === 'arrow' && typeof resolvedX2 !== 'number' && Array.isArray(el.points) && el.points.length > 1) {
+            const lastPt = el.points[el.points.length - 1];
+            if (Array.isArray(lastPt) && lastPt.length >= 2) {
+              resolvedX2 = (Number(el.x) || 0) + (Number(lastPt[0]) || 0);
+              resolvedY2 = (Number(el.y) || 0) + (Number(lastPt[1]) || 0);
+            }
+          }
+          return createElement(normType, {
+            ...el,
+            x2: resolvedX2,
+            y2: resolvedY2,
+            text: normType === 'arrow' ? '' : String(el.text ?? '')
+          });
+        });
+
+        const appState = {};
+        const raw = data.appState && typeof data.appState === 'object' ? data.appState : {};
+        if (typeof raw.viewBackgroundColor === 'string') appState.viewBackgroundColor = raw.viewBackgroundColor;
+        if (typeof raw.flowEnabled === 'boolean') appState.flowEnabled = raw.flowEnabled;
+        if (typeof raw.flowMode === 'string' && ALLOWED_FLOW_MODES.has(raw.flowMode)) appState.flowMode = raw.flowMode;
+        if (raw.flowSpeed !== undefined) {
+          const spd = Number(raw.flowSpeed);
+          if (Number.isFinite(spd) && spd > 0) appState.flowSpeed = Math.max(0.2, Math.min(5.0, spd));
+        }
+        const scrollX = Number(raw.scrollX);
+        const scrollY = Number(raw.scrollY);
+        const zoom = Number(raw.zoom && typeof raw.zoom === 'object' ? raw.zoom.value : raw.zoom);
+        if (Number.isFinite(scrollX) && Number.isFinite(scrollY) && Number.isFinite(zoom) && zoom > 0) {
+          appState.camera = { scrollX, scrollY, zoom: Math.max(0.25, Math.min(3.0, zoom)) };
+        }
+        return { elements, appState };
+      } catch (err) {
+        return null;
+      }
+    }
+
+    // Replaces the scene with a parsed one. With restoreCamera, the saved camera is reused
+    // (falling back to fit-to-screen); otherwise the view is always fitted.
+    function applyScene(scene, { restoreCamera = false } = {}) {
+      const app = scene.appState || {};
+      state.elements = scene.elements;
+      state.selectedIds.clear();
+      state.activePulses = [];
+      ShapeCache.clear();
+      if (app.viewBackgroundColor) setCanvasBackground(app.viewBackgroundColor);
+      if (app.flowEnabled !== undefined) state.flowEnabled = app.flowEnabled;
+      if (app.flowMode) state.flowMode = app.flowMode;
+      if (app.flowSpeed !== undefined) state.flowSpeed = app.flowSpeed;
+      if (restoreCamera && app.camera) {
+        state.scrollX = app.camera.scrollX;
+        state.scrollY = app.camera.scrollY;
+        state.zoom = app.camera.zoom;
+        syncZoomReadout();
+      } else {
+        fitToScreen();
+      }
+      syncFlowControls();
+      syncUIWithSelection();
     }
 
     function importExcalidrawJson(jsonString) {
       closeAllDropdowns();
-      try {
-        const data = JSON.parse(jsonString);
-        if (data && Array.isArray(data.elements)) {
-          const validRaw = data.elements.filter(
-            el => el && !el.isDeleted && typeof el.type === 'string' && ALLOWED_ELEMENT_TYPES.has(el.type)
-          );
-          pushHistory();
-          state.elements = validRaw.map(el => {
-            const normType = el.type === 'line' ? 'arrow' : el.type;
-            let resolvedX2 = el.x2;
-            let resolvedY2 = el.y2;
-            if (normType === 'arrow' && typeof resolvedX2 !== 'number' && Array.isArray(el.points) && el.points.length > 1) {
-              const lastPt = el.points[el.points.length - 1];
-              if (Array.isArray(lastPt) && lastPt.length >= 2) {
-                resolvedX2 = (Number(el.x) || 0) + (Number(lastPt[0]) || 0);
-                resolvedY2 = (Number(el.y) || 0) + (Number(lastPt[1]) || 0);
-              }
-            }
-            return createElement(normType, {
-              ...el,
-              x2: resolvedX2,
-              y2: resolvedY2,
-              text: normType === 'arrow' ? '' : String(el.text ?? '')
-            });
-          });
-          if (data.appState && typeof data.appState === 'object') {
-            if (data.appState.viewBackgroundColor) setCanvasBackground(data.appState.viewBackgroundColor);
-            if (typeof data.appState.flowMode === 'string' && ALLOWED_FLOW_MODES.has(data.appState.flowMode)) {
-              state.flowMode = data.appState.flowMode;
-            }
-            if (data.appState.flowSpeed !== undefined) {
-              const spd = Number(data.appState.flowSpeed);
-              if (Number.isFinite(spd) && spd > 0) {
-                state.flowSpeed = Math.max(0.2, Math.min(5.0, spd));
-              }
-            }
-          }
-          state.selectedIds.clear();
-          ShapeCache.clear();
-          fitToScreen();
-          syncUIWithSelection();
-          showToast('Loaded Excaliflow scene');
-          return true;
-        }
-      } catch (err) {
+      const scene = parseSceneJson(jsonString);
+      if (!scene) {
         showToast('Invalid JSON file');
+        return false;
       }
-      return false;
+      pushHistory();
+      applyScene(scene);
+      showToast('Loaded Excaliflow scene');
+      return true;
     }
 
     /* -------------------------------------------------------------------------
@@ -4434,8 +4771,9 @@
       const bounds = getDiagramExportBounds(64);
       const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
       const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-      const sidebarOffset = (typeof document !== 'undefined' &&
-        !document.getElementById('leftSidebar')?.classList.contains('collapsed')) ? 115 : 0;
+      const sidebarOffset = ((typeof document !== 'undefined' &&
+        !document.getElementById('leftSidebar')?.classList.contains('collapsed')) ? 115 : 0) +
+        (state.projectsPanelOpen ? 122 : 0);
 
       const availW = Math.max(320, vw - sidebarOffset - 80);
       const availH = Math.max(240, vh - 140);
@@ -4451,6 +4789,32 @@
       if (typeof document === 'undefined') return;
       const sb = document.getElementById('leftSidebar');
       if (sb) sb.classList.toggle('collapsed');
+    }
+
+    function setProjectsPanelOpen(open) {
+      state.projectsPanelOpen = Boolean(open);
+      try {
+        localStorage.setItem(PROJECTS_PANEL_KEY, state.projectsPanelOpen ? '1' : '0');
+      } catch (err) { /* storage unavailable: preference just isn't remembered */ }
+      if (typeof document === 'undefined') return;
+      document.getElementById('projectsPanel')?.classList.toggle('collapsed', !state.projectsPanelOpen);
+      document.getElementById('projectsToggleBtn')?.classList.toggle('active', state.projectsPanelOpen);
+      document.body?.classList?.toggle('projects-open', state.projectsPanelOpen);
+    }
+
+    function toggleProjectsPanel() {
+      setProjectsPanelOpen(!state.projectsPanelOpen);
+    }
+
+    function syncFlowControls() {
+      if (typeof document === 'undefined') return;
+      document.querySelectorAll('#flowModeGrid [data-flow-mode]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-flow-mode') === state.flowMode);
+      });
+      document.querySelectorAll('#flowSpeedRow [data-flow-speed]').forEach(b => {
+        b.classList.toggle('active', Number(b.getAttribute('data-flow-speed')) === state.flowSpeed);
+      });
+      updateHeaderButtons();
     }
 
     function updateHeaderButtons() {
@@ -4738,11 +5102,7 @@
       window.addEventListener('dragover', e => e.preventDefault?.());
       window.addEventListener('drop', e => {
         e.preventDefault?.();
-        const file = e.dataTransfer?.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => importExcalidrawJson(String(ev.target?.result || ''));
-        reader.readAsText(file);
+        importSceneFiles(e.dataTransfer?.files);
       });
 
       // Dropdown toggles
@@ -4763,6 +5123,28 @@
       window.addEventListener('click', () => closeAllDropdowns());
 
       document.getElementById('sidebarToggleBtn')?.addEventListener('click', toggleSidebar);
+      document.getElementById('projectsToggleBtn')?.addEventListener('click', toggleProjectsPanel);
+      document.getElementById('ppNewProjectBtn')?.addEventListener('click', () => promptNewProject());
+      document.getElementById('crumbCanvas')?.addEventListener('click', () => {
+        const ws = state.workspace;
+        if (ws.canvasId) promptRenameCanvas(ws.projectId, ws.canvasId);
+        else setProjectsPanelOpen(true);
+      });
+      document.getElementById('ppTree')?.addEventListener('click', e => {
+        const target = e.target?.closest?.('[data-action]');
+        if (target) handleProjectsPanelAction(target.getAttribute('data-action'), target);
+      });
+      document.getElementById('ppTree')?.addEventListener('dblclick', e => {
+        const row = e.target?.closest?.('.pp-row');
+        if (!row || e.target?.closest?.('.pp-act')) return;
+        const projectId = row.getAttribute('data-project');
+        const canvasId = row.getAttribute('data-canvas');
+        if (canvasId) promptRenameCanvas(projectId, canvasId);
+        else if (projectId) promptRenameProject(projectId);
+      });
+      document.getElementById('conflictReloadBtn')?.addEventListener('click', () => resolveConflict('reload'));
+      document.getElementById('conflictOverwriteBtn')?.addEventListener('click', () => resolveConflict('overwrite'));
+      document.getElementById('conflictCopyBtn')?.addEventListener('click', () => resolveConflict('copy'));
       document.getElementById('btnUndo')?.addEventListener('click', undo);
       document.getElementById('btnRedo')?.addEventListener('click', redo);
       document.getElementById('bgWhiteBtn')?.addEventListener('click', () => setCanvasBackground('#ffffff'));
@@ -4781,12 +5163,9 @@
         document.getElementById('jsonFileInput')?.click();
       });
       document.getElementById('jsonFileInput')?.addEventListener('change', e => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => importExcalidrawJson(String(ev.target?.result || ''));
-        reader.readAsText(file);
+        const files = Array.from(e.target.files || []);
         e.target.value = '';
+        importSceneFiles(files);
       });
       document.getElementById('btnClearScene')?.addEventListener('click', () => {
         closeAllDropdowns();
@@ -4905,9 +5284,18 @@
         ]);
       }
 
-      loadTemplate('AI Agent Swarm');
-      state.history.undoStack = [];
-      updateHeaderButtons();
+      // Open the last canvas from the server workspace, or fall back to a scratch template
+      restoreWorkspace();
+      setInterval(autosaveTick, AUTOSAVE_INTERVAL_MS);
+      document.addEventListener?.('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushSave();
+      });
+      window.addEventListener('beforeunload', e => {
+        if (!isCanvasDirty()) return;
+        flushSave();
+        e.preventDefault?.();
+        e.returnValue = '';
+      });
 
       let lastFrameTime = performance.now() / 1000;
       const tick = (nowMs) => {
@@ -4949,6 +5337,752 @@
       requestAnimationFrame(tick);
     }
 
+    /* -------------------------------------------------------------------------
+     * 17. Projects Workspace (folders of .excaliflow canvases served by server.js /api)
+     * ------------------------------------------------------------------------- */
+    const LAST_CANVAS_KEY = 'excaliflow:lastCanvas';
+    const PROJECTS_PANEL_KEY = 'excaliflow:projectsPanelOpen';
+    const AUTOSAVE_INTERVAL_MS = 1000;
+    const SAVE_RETRY_MS = 5000;
+
+    // Mirrors server.js sanitizeName: a name can never address anything but a direct child
+    function sanitizeName(raw) {
+      return String(raw ?? '')
+        .normalize('NFC')
+        .replace(/[/\\:*?"<>|\u0000-\u001f\u007f]/g, '')
+        .replace(/^[.\s]+/, '')
+        .slice(0, 80)
+        .replace(/[.\s]+$/, '')
+        .trim();
+    }
+
+    function uniqueName(base, existing) {
+      const taken = new Set([...existing].map(n => String(n).toLowerCase()));
+      if (!taken.has(base.toLowerCase())) return base;
+      for (let i = 2; ; i++) {
+        const candidate = `${base} ${i}`;
+        if (!taken.has(candidate.toLowerCase())) return candidate;
+      }
+    }
+
+    function cleanNewName(raw, fallback) {
+      return sanitizeName(String(raw ?? '').replace(/\.(excaliflow|excalidraw|json)$/i, '')) || fallback;
+    }
+
+    function storeError(status, message) {
+      const err = new Error(message);
+      err.status = status;
+      return err;
+    }
+
+    // All stores share one async interface; ids are the folder / file names.
+    function createHttpStore(baseUrl = '/api') {
+      const enc = encodeURIComponent;
+      const request = async (method, path, { json, text, headers } = {}) => {
+        const init = { method, cache: 'no-store', headers: { 'X-Excaliflow': '1', ...headers } };
+        const body = text !== undefined ? text : (json !== undefined ? JSON.stringify(json) : undefined);
+        if (body !== undefined) {
+          init.headers['Content-Type'] = 'application/json';
+          init.body = body;
+          // Lets a save started while the tab is closing still reach the server
+          init.keepalive = body.length < 60000;
+        }
+        const res = await fetch(baseUrl + path, init);
+        if (!res.ok) {
+          let message = `HTTP ${res.status}`;
+          try {
+            message = (await res.json()).error || message;
+          } catch (err) { /* non-JSON error body */ }
+          throw storeError(res.status, message);
+        }
+        return res;
+      };
+      const projectPath = p => `/projects/${enc(p)}`;
+      const canvasPath = (p, c) => `${projectPath(p)}/canvases/${enc(c)}`;
+      return {
+        kind: 'server',
+        async getWorkspace() {
+          return (await request('GET', '/workspace')).json();
+        },
+        async createProject(name) {
+          return (await request('POST', '/projects', { json: { name } })).json();
+        },
+        async renameProject(p, name) {
+          return (await request('PATCH', projectPath(p), { json: { name } })).json();
+        },
+        async deleteProject(p) {
+          await request('DELETE', projectPath(p));
+        },
+        async createCanvas(p, name, text) {
+          return (await request('POST', `${projectPath(p)}/canvases`, { json: { name, text } })).json();
+        },
+        async readCanvas(p, c) {
+          const res = await request('GET', canvasPath(p, c));
+          return { text: await res.text(), modified: Number(res.headers.get('X-Modified')) };
+        },
+        async writeCanvas(p, c, text, expectedModified) {
+          const headers = Number.isFinite(expectedModified) ? { 'If-Unmodified-Since-Ms': String(expectedModified) } : {};
+          return (await request('PUT', canvasPath(p, c), { text, headers })).json();
+        },
+        async renameCanvas(p, c, name) {
+          return (await request('PATCH', canvasPath(p, c), { json: { name } })).json();
+        },
+        async deleteCanvas(p, c) {
+          await request('DELETE', canvasPath(p, c));
+        }
+      };
+    }
+
+    // In-memory store with the same semantics as the server (unique names, 409 on stale writes)
+    function createMemoryStore() {
+      const projects = new Map();
+      let clock = 1;
+      const getProject = p => {
+        if (!projects.has(p)) throw storeError(404, 'Project not found');
+        return projects.get(p);
+      };
+      const getCanvas = (p, c) => {
+        const proj = getProject(p);
+        if (!proj.has(c)) throw storeError(404, 'Canvas not found');
+        return proj.get(c);
+      };
+      const info = (name, entry) => ({ id: name, name, modified: entry.modified });
+      const sorted = keys => [...keys].sort((a, b) => a.localeCompare(b));
+      return {
+        kind: 'memory',
+        async getWorkspace() {
+          return {
+            name: 'memory',
+            projects: sorted(projects.keys()).map(p => ({
+              id: p,
+              name: p,
+              canvases: sorted(projects.get(p).keys()).map(c => info(c, projects.get(p).get(c)))
+            }))
+          };
+        },
+        async createProject(name) {
+          const n = uniqueName(cleanNewName(name, 'Untitled Project'), projects.keys());
+          projects.set(n, new Map());
+          return { id: n, name: n, canvases: [] };
+        },
+        async renameProject(p, name) {
+          const canvases = getProject(p);
+          const n = uniqueName(cleanNewName(name, p), [...projects.keys()].filter(k => k !== p));
+          if (n !== p) {
+            projects.delete(p);
+            projects.set(n, canvases);
+          }
+          return { id: n, name: n };
+        },
+        async deleteProject(p) {
+          getProject(p);
+          projects.delete(p);
+        },
+        async createCanvas(p, name, text) {
+          const proj = getProject(p);
+          const body = text === undefined ? '{"elements":[]}' : String(text);
+          if (!parseSceneJson(body)) throw storeError(400, 'Canvas body must contain an elements array');
+          const n = uniqueName(cleanNewName(name, 'Untitled'), proj.keys());
+          const entry = { text: body, modified: clock++ };
+          proj.set(n, entry);
+          return info(n, entry);
+        },
+        async readCanvas(p, c) {
+          const entry = getCanvas(p, c);
+          return { text: entry.text, modified: entry.modified };
+        },
+        async writeCanvas(p, c, text, expectedModified) {
+          const entry = getCanvas(p, c);
+          if (Number.isFinite(expectedModified) && expectedModified !== entry.modified) {
+            throw storeError(409, 'Canvas changed on disk');
+          }
+          entry.text = String(text);
+          entry.modified = clock++;
+          return info(c, entry);
+        },
+        async renameCanvas(p, c, name) {
+          const proj = getProject(p);
+          const entry = getCanvas(p, c);
+          const n = uniqueName(cleanNewName(name, c), [...proj.keys()].filter(k => k !== c));
+          if (n !== c) {
+            proj.delete(c);
+            proj.set(n, entry);
+          }
+          return info(n, entry);
+        },
+        async deleteCanvas(p, c) {
+          getCanvas(p, c);
+          getProject(p).delete(c);
+        }
+      };
+    }
+
+    // Everything that is persisted except the camera, so panning and zooming alone never trigger a save
+    function sceneContentKey() {
+      return JSON.stringify([state.elements, state.canvasBg, state.flowEnabled, state.flowMode, state.flowSpeed]);
+    }
+
+    function isCanvasDirty() {
+      const ws = state.workspace;
+      return Boolean(ws.store && ws.canvasId) && sceneContentKey() !== ws.lastSavedKey;
+    }
+
+    function emptySceneText() {
+      return JSON.stringify({
+        type: 'excaliflow',
+        version: 2,
+        source: 'Excaliflow',
+        elements: [],
+        appState: {
+          viewBackgroundColor: state.canvasBg,
+          flowEnabled: state.flowEnabled,
+          flowMode: state.flowMode,
+          flowSpeed: state.flowSpeed
+        }
+      }, null, 2);
+    }
+
+    function findTreeProject(projectId) {
+      return state.workspace.tree?.projects?.find(p => p.id === projectId) || null;
+    }
+
+    function findTreeCanvas(projectId, canvasId) {
+      return findTreeProject(projectId)?.canvases?.find(c => c.id === canvasId) || null;
+    }
+
+    function readLastCanvas() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(LAST_CANVAS_KEY) || 'null');
+        return raw && typeof raw.projectId === 'string' && typeof raw.canvasId === 'string' ? raw : null;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function rememberLastCanvas() {
+      const { projectId, canvasId } = state.workspace;
+      try {
+        localStorage.setItem(LAST_CANVAS_KEY, JSON.stringify({ projectId, canvasId }));
+      } catch (err) { /* storage unavailable */ }
+    }
+
+    function readProjectsPanelPref() {
+      try {
+        const raw = localStorage.getItem(PROJECTS_PANEL_KEY);
+        return raw === null ? null : raw === '1';
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function setSaveStatus(status) {
+      const prev = state.workspace.status;
+      state.workspace.status = status;
+      if (status === 'error' && prev !== 'error') showToast('Could not save — is `npm start` still running?');
+      if (status === 'conflict' && prev !== 'conflict') showToast('This canvas changed on disk');
+      updateWorkspaceChrome();
+    }
+
+    async function refreshWorkspaceTree() {
+      const ws = state.workspace;
+      ws.tree = await ws.store.getWorkspace();
+      renderProjectsPanel();
+      return ws.tree;
+    }
+
+    function enterScratchMode() {
+      const ws = state.workspace;
+      ws.store = null;
+      ws.tree = null;
+      ws.projectId = null;
+      ws.canvasId = null;
+      ws.lastSavedKey = null;
+      loadTemplate('AI Agent Swarm');
+      state.history.undoStack = [];
+      state.history.redoStack = [];
+      updateHeaderButtons();
+      setSaveStatus('scratch');
+      renderProjectsPanel();
+    }
+
+    function canUseWorkspaceServer() {
+      return typeof fetch === 'function' &&
+        typeof location !== 'undefined' &&
+        (location.protocol === 'http:' || location.protocol === 'https:');
+    }
+
+    // Startup: connect to server.js when served over http(s); file:// and test sandboxes stay in scratch mode
+    function restoreWorkspace() {
+      if (!canUseWorkspaceServer()) {
+        enterScratchMode();
+        return Promise.resolve(false);
+      }
+      return connectWorkspace(createHttpStore('/api'));
+    }
+
+    async function connectWorkspace(store) {
+      const ws = state.workspace;
+      ws.store = store;
+      try {
+        await refreshWorkspaceTree();
+      } catch (err) {
+        enterScratchMode();
+        return false;
+      }
+      const pref = readProjectsPanelPref();
+      setProjectsPanelOpen(pref === null ? true : pref);
+
+      const last = readLastCanvas();
+      if (last && findTreeCanvas(last.projectId, last.canvasId)) {
+        if (await openCanvas(last.projectId, last.canvasId, { skipFlush: true })) return true;
+      }
+      return ensureOpenCanvas();
+    }
+
+    // Guarantees a canvas is open: the first existing one, or a fresh one in a new project
+    async function ensureOpenCanvas(preferProjectId = null) {
+      const ws = state.workspace;
+      const projects = ws.tree?.projects || [];
+      const preferred = projects.find(p => p.id === preferProjectId);
+      for (const project of preferred ? [preferred, ...projects] : projects) {
+        if (project.canvases.length > 0) {
+          return openCanvas(project.id, project.canvases[0].id, { skipFlush: true });
+        }
+      }
+      try {
+        if (preferred) return Boolean(await newCanvas(preferred.id, 'Untitled', { skipFlush: true }));
+        if (projects.length > 0) return Boolean(await newCanvas(projects[0].id, 'Untitled', { skipFlush: true }));
+        const project = await ws.store.createProject('My Project');
+        await refreshWorkspaceTree();
+        return Boolean(await newCanvas(project.id, 'Getting Started', { template: 'AI Agent Swarm', skipFlush: true }));
+      } catch (err) {
+        showToast(`Could not create a canvas: ${err.message}`);
+        return false;
+      }
+    }
+
+    async function openCanvas(projectId, canvasId, { skipFlush = false } = {}) {
+      const ws = state.workspace;
+      if (!ws.store) return false;
+      if (!skipFlush && ws.canvasId && !(await flushSave())) {
+        showToast('Current canvas is not saved — resolve that before switching');
+        return false;
+      }
+      let file;
+      try {
+        file = await ws.store.readCanvas(projectId, canvasId);
+      } catch (err) {
+        showToast(`Could not open ${canvasId}: ${err.message}`);
+        return false;
+      }
+      const scene = parseSceneJson(file.text);
+      if (!scene) {
+        showToast(`${canvasId} is not a valid Excaliflow file`);
+        return false;
+      }
+      commitInlineEditor();
+      applyScene(scene, { restoreCamera: true });
+      // Undo history belongs to a single canvas
+      state.history.undoStack = [];
+      state.history.redoStack = [];
+      ws.projectId = projectId;
+      ws.canvasId = canvasId;
+      ws.lastSavedKey = sceneContentKey();
+      ws.lastSavedModified = file.modified;
+      ws.expanded.add(projectId);
+      rememberLastCanvas();
+      updateHeaderButtons();
+      setSaveStatus('saved');
+      renderProjectsPanel();
+      return true;
+    }
+
+    async function newCanvas(projectId, name = 'Untitled', { template = null, skipFlush = false } = {}) {
+      const ws = state.workspace;
+      if (!ws.store) return null;
+      if (!skipFlush && ws.canvasId && !(await flushSave())) {
+        showToast('Current canvas is not saved — resolve that before creating another');
+        return null;
+      }
+      let info;
+      try {
+        info = await ws.store.createCanvas(projectId, name, emptySceneText());
+        await refreshWorkspaceTree();
+      } catch (err) {
+        showToast(`Could not create canvas: ${err.message}`);
+        return null;
+      }
+      if (!(await openCanvas(projectId, info.id, { skipFlush: true }))) return null;
+      if (template) {
+        loadTemplate(template);
+        state.history.undoStack = [];
+        updateHeaderButtons();
+        await flushSave();
+      }
+      return info.id;
+    }
+
+    async function flushSave({ overwrite = false } = {}) {
+      const ws = state.workspace;
+      while (ws.saving) await ws.saving;
+      if (!ws.store || !ws.canvasId) return true;
+      if (ws.status === 'conflict' && !overwrite) return false;
+      const key = sceneContentKey();
+      if (key === ws.lastSavedKey && !overwrite) return true;
+
+      const { projectId, canvasId } = ws;
+      const text = JSON.stringify(serializeScene(), null, 2);
+      setSaveStatus('saving');
+      ws.saving = (async () => {
+        try {
+          const info = await ws.store.writeCanvas(projectId, canvasId, text, overwrite ? undefined : ws.lastSavedModified);
+          if (ws.projectId === projectId && ws.canvasId === canvasId) {
+            ws.lastSavedKey = key;
+            ws.lastSavedModified = info.modified;
+          }
+          const treeCanvas = findTreeCanvas(projectId, canvasId);
+          if (treeCanvas) treeCanvas.modified = info.modified;
+          setSaveStatus(isCanvasDirty() ? 'unsaved' : 'saved');
+          renderProjectsPanel();
+          return true;
+        } catch (err) {
+          if (err.status === 409) {
+            setSaveStatus('conflict');
+          } else {
+            ws.retryAt = Date.now() + SAVE_RETRY_MS;
+            setSaveStatus('error');
+          }
+          return false;
+        } finally {
+          ws.saving = null;
+        }
+      })();
+      return ws.saving;
+    }
+
+    function autosaveTick() {
+      const ws = state.workspace;
+      if (!ws.store || !ws.canvasId || ws.saving || state.drag) return;
+      if (ws.status === 'conflict') return;
+      if (ws.status === 'error' && Date.now() < ws.retryAt) return;
+      if (isCanvasDirty()) flushSave();
+    }
+
+    function saveNow() {
+      const ws = state.workspace;
+      if (!ws.store || !ws.canvasId) {
+        exportExcalidrawJson();
+        return Promise.resolve(false);
+      }
+      return flushSave().then(ok => {
+        if (ok) showToast(`Saved ${ws.canvasId}.excaliflow`);
+        return ok;
+      });
+    }
+
+    async function resolveConflict(choice) {
+      const ws = state.workspace;
+      if (!ws.store || !ws.canvasId) return;
+      if (choice === 'reload') {
+        await openCanvas(ws.projectId, ws.canvasId, { skipFlush: true });
+      } else if (choice === 'overwrite') {
+        if (await flushSave({ overwrite: true })) showToast(`Overwrote ${ws.canvasId}.excaliflow`);
+      } else if (choice === 'copy') {
+        try {
+          const info = await ws.store.createCanvas(ws.projectId, `${ws.canvasId} copy`, JSON.stringify(serializeScene(), null, 2));
+          ws.canvasId = info.id;
+          ws.lastSavedKey = sceneContentKey();
+          ws.lastSavedModified = info.modified;
+          rememberLastCanvas();
+          setSaveStatus('saved');
+          await refreshWorkspaceTree();
+          showToast(`Saved as ${info.name}`);
+        } catch (err) {
+          showToast(`Could not save a copy: ${err.message}`);
+        }
+      }
+    }
+
+    async function promptNewProject() {
+      const ws = state.workspace;
+      if (!ws.store) {
+        showToast('Run `npm start` to save projects as files');
+        return null;
+      }
+      const name = typeof prompt === 'function' ? prompt('New project name', 'Untitled Project') : 'Untitled Project';
+      if (name === null) return null;
+      try {
+        const project = await ws.store.createProject(name);
+        ws.expanded.add(project.id);
+        await refreshWorkspaceTree();
+        await newCanvas(project.id, 'Untitled');
+        return project.id;
+      } catch (err) {
+        showToast(`Could not create project: ${err.message}`);
+        return null;
+      }
+    }
+
+    async function promptRenameProject(projectId) {
+      const ws = state.workspace;
+      const name = prompt('Rename project', projectId);
+      if (name === null || name.trim() === projectId) return;
+      try {
+        await flushSave();
+        while (ws.saving) await ws.saving;
+        const info = await ws.store.renameProject(projectId, name);
+        if (ws.expanded.delete(projectId)) ws.expanded.add(info.id);
+        if (ws.projectId === projectId) {
+          ws.projectId = info.id;
+          rememberLastCanvas();
+        }
+        await refreshWorkspaceTree();
+        updateWorkspaceChrome();
+      } catch (err) {
+        showToast(`Could not rename project: ${err.message}`);
+      }
+    }
+
+    async function promptRenameCanvas(projectId, canvasId) {
+      const ws = state.workspace;
+      const name = prompt('Rename canvas', canvasId);
+      if (name === null || name.trim() === canvasId) return;
+      const isCurrent = ws.projectId === projectId && ws.canvasId === canvasId;
+      try {
+        if (isCurrent) await flushSave();
+        while (ws.saving) await ws.saving;
+        const info = await ws.store.renameCanvas(projectId, canvasId, name);
+        if (isCurrent) {
+          ws.canvasId = info.id;
+          ws.lastSavedModified = info.modified;
+          rememberLastCanvas();
+        }
+        await refreshWorkspaceTree();
+        updateWorkspaceChrome();
+      } catch (err) {
+        showToast(`Could not rename canvas: ${err.message}`);
+      }
+    }
+
+    async function duplicateCanvas(projectId, canvasId) {
+      const ws = state.workspace;
+      try {
+        if (!(await flushSave())) return;
+        const { text } = await ws.store.readCanvas(projectId, canvasId);
+        const info = await ws.store.createCanvas(projectId, `${canvasId} copy`, text);
+        await refreshWorkspaceTree();
+        await openCanvas(projectId, info.id, { skipFlush: true });
+      } catch (err) {
+        showToast(`Could not duplicate canvas: ${err.message}`);
+      }
+    }
+
+    async function deleteCanvasFile(projectId, canvasId) {
+      const ws = state.workspace;
+      if (!confirm(`Move "${canvasId}" to the workspace .trash folder?`)) return;
+      const isCurrent = ws.projectId === projectId && ws.canvasId === canvasId;
+      try {
+        while (ws.saving) await ws.saving;
+        await ws.store.deleteCanvas(projectId, canvasId);
+        if (isCurrent) ws.canvasId = null;
+        await refreshWorkspaceTree();
+        if (isCurrent) await ensureOpenCanvas(projectId);
+        else renderProjectsPanel();
+      } catch (err) {
+        showToast(`Could not delete canvas: ${err.message}`);
+      }
+    }
+
+    async function deleteProjectFolder(projectId) {
+      const ws = state.workspace;
+      const count = findTreeProject(projectId)?.canvases.length || 0;
+      if (!confirm(`Move project "${projectId}" and its ${count} canvas${count === 1 ? '' : 'es'} to the workspace .trash folder?`)) return;
+      const isCurrent = ws.projectId === projectId;
+      try {
+        while (ws.saving) await ws.saving;
+        if (isCurrent) await flushSave();
+        await ws.store.deleteProject(projectId);
+        ws.expanded.delete(projectId);
+        if (isCurrent) {
+          ws.projectId = null;
+          ws.canvasId = null;
+        }
+        await refreshWorkspaceTree();
+        if (isCurrent) await ensureOpenCanvas();
+      } catch (err) {
+        showToast(`Could not delete project: ${err.message}`);
+      }
+    }
+
+    function readFileText(file) {
+      if (typeof file?.text === 'function') return file.text();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = ev => resolve(String(ev.target?.result || ''));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+    }
+
+    async function importAsNewCanvas(projectId, fileName, text) {
+      const ws = state.workspace;
+      if (!parseSceneJson(text)) {
+        showToast(`${fileName} is not a valid scene file`);
+        return null;
+      }
+      if (ws.canvasId && !(await flushSave())) {
+        showToast('Current canvas is not saved — resolve that before importing');
+        return null;
+      }
+      try {
+        const info = await ws.store.createCanvas(projectId, cleanNewName(fileName, 'Imported'), text);
+        await refreshWorkspaceTree();
+        await openCanvas(projectId, info.id, { skipFlush: true });
+        showToast(`Imported ${info.name}`);
+        return info.id;
+      } catch (err) {
+        showToast(`Import failed: ${err.message}`);
+        return null;
+      }
+    }
+
+    // Imported files become new canvases in the current project; in scratch mode they replace the scene
+    async function importSceneFiles(fileList) {
+      closeAllDropdowns();
+      const files = Array.from(fileList || []);
+      if (files.length === 0) return;
+      const ws = state.workspace;
+      if (!ws.store || !ws.projectId) {
+        importExcalidrawJson(await readFileText(files[0]));
+        return;
+      }
+      for (const file of files) {
+        await importAsNewCanvas(ws.projectId, file.name, await readFileText(file));
+      }
+    }
+
+    function handleProjectsPanelAction(action, el) {
+      const projectId = el.getAttribute('data-project');
+      const canvasId = el.getAttribute('data-canvas');
+      const ws = state.workspace;
+      if (action === 'toggle-project') {
+        if (ws.expanded.has(projectId)) ws.expanded.delete(projectId);
+        else ws.expanded.add(projectId);
+        renderProjectsPanel();
+      } else if (action === 'open-canvas') {
+        if (ws.projectId !== projectId || ws.canvasId !== canvasId) openCanvas(projectId, canvasId);
+      } else if (action === 'new-canvas') {
+        ws.expanded.add(projectId);
+        newCanvas(projectId, 'Untitled');
+      } else if (action === 'rename-project') {
+        promptRenameProject(projectId);
+      } else if (action === 'delete-project') {
+        deleteProjectFolder(projectId);
+      } else if (action === 'rename-canvas') {
+        promptRenameCanvas(projectId, canvasId);
+      } else if (action === 'duplicate-canvas') {
+        duplicateCanvas(projectId, canvasId);
+      } else if (action === 'delete-canvas') {
+        deleteCanvasFile(projectId, canvasId);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+      ));
+    }
+
+    function formatRelativeTime(ms) {
+      const diff = Math.max(0, Date.now() - Number(ms || 0)) / 1000;
+      if (diff < 60) return 'now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+      if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}d`;
+      return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    function renderProjectsPanel() {
+      if (typeof document === 'undefined') return;
+      const ws = state.workspace;
+      const tree = document.getElementById('ppTree');
+      const notice = document.getElementById('ppNotice');
+      const rootName = document.getElementById('ppWorkspaceName');
+      updateWorkspaceChrome();
+      if (!tree) return;
+
+      if (!ws.store) {
+        if (rootName) rootName.textContent = '';
+        if (notice) {
+          notice.innerHTML = 'Scratch mode — nothing is saved. Run <code>npm start</code> and open ' +
+            '<code>http://localhost:3000</code> to keep canvases as files.';
+          notice.classList.add('show');
+        }
+        tree.innerHTML = '';
+        return;
+      }
+      notice?.classList.remove('show');
+      if (rootName) {
+        rootName.textContent = ws.tree?.name ? `· ${ws.tree.name}` : '';
+        rootName.title = ws.tree?.name || '';
+      }
+
+      const act = (action, title, label, attrs, extraClass = '') =>
+        `<button class="pp-act ${extraClass}" data-action="${action}" ${attrs} title="${title}">${label}</button>`;
+      tree.innerHTML = (ws.tree?.projects || []).map(project => {
+        const pAttr = `data-project="${escapeHtml(project.id)}"`;
+        const open = ws.expanded.has(project.id);
+        const canvases = project.canvases.map(canvas => {
+          const attrs = `${pAttr} data-canvas="${escapeHtml(canvas.id)}"`;
+          const active = ws.projectId === project.id && ws.canvasId === canvas.id;
+          return `<div class="pp-row pp-canvas-row${active ? ' active' : ''}" data-action="open-canvas" ${attrs} title="${escapeHtml(canvas.name)}">` +
+            `<span class="pp-name">${escapeHtml(canvas.name)}</span>` +
+            `<span class="pp-time">${escapeHtml(formatRelativeTime(canvas.modified))}</span>` +
+            `<span class="pp-actions">` +
+              act('rename-canvas', 'Rename', '✎', attrs) +
+              act('duplicate-canvas', 'Duplicate', '⧉', attrs) +
+              act('delete-canvas', 'Move to trash', '✕', attrs, 'danger') +
+            `</span></div>`;
+        }).join('');
+        return `<div class="pp-project${open ? ' open' : ''}">` +
+          `<div class="pp-row pp-project-row" data-action="toggle-project" ${pAttr} title="${escapeHtml(project.name)}">` +
+            `<span class="pp-chevron">▶</span>` +
+            `<span class="pp-name">${escapeHtml(project.name)}</span>` +
+            `<span class="pp-count">${project.canvases.length}</span>` +
+            `<span class="pp-actions">` +
+              act('new-canvas', 'New canvas', '+', pAttr) +
+              act('rename-project', 'Rename', '✎', pAttr) +
+              act('delete-project', 'Move to trash', '✕', pAttr, 'danger') +
+            `</span></div>` +
+          `<div class="pp-canvases">${canvases || '<div class="pp-empty">No canvases yet</div>'}</div>` +
+        `</div>`;
+      }).join('') || '<div class="pp-empty">No projects yet</div>';
+    }
+
+    const SAVE_STATUS_LABELS = {
+      saved: 'All changes saved',
+      saving: 'Saving…',
+      unsaved: 'Unsaved changes',
+      conflict: 'File changed on disk',
+      error: 'Save failed — retrying',
+      scratch: 'Scratch canvas — not saved to a file'
+    };
+
+    function updateWorkspaceChrome() {
+      if (typeof document === 'undefined') return;
+      const ws = state.workspace;
+      const project = document.getElementById('crumbProject');
+      const canvas = document.getElementById('crumbCanvas');
+      const dot = document.getElementById('saveStatusDot');
+      if (project) project.textContent = ws.canvasId ? ws.projectId : 'Scratch';
+      if (canvas) canvas.textContent = ws.canvasId || 'Unsaved canvas';
+      if (dot) {
+        dot.className = `save-dot ${ws.status}`;
+        dot.title = SAVE_STATUS_LABELS[ws.status] || '';
+      }
+      document.getElementById('conflictBar')?.classList.toggle('show', ws.status === 'conflict');
+    }
+
     if (typeof window !== 'undefined') {
       Object.assign(window, {
         state,
@@ -4988,7 +6122,21 @@
         undo,
         redo,
         importExcalidrawJson,
-        applyStyleProperty
+        applyStyleProperty,
+        serializeScene,
+        parseSceneJson,
+        applyScene,
+        sanitizeName,
+        uniqueName,
+        createMemoryStore,
+        connectWorkspace,
+        openCanvas,
+        newCanvas,
+        flushSave,
+        resolveConflict,
+        sceneContentKey,
+        isCanvasDirty,
+        pushHistory
       });
       window.addEventListener('DOMContentLoaded', initStudioDOM);
     }

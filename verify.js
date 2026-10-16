@@ -1,5 +1,7 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { Readable } = require('stream');
 const vm = require('vm');
 const assert = require('assert');
 
@@ -437,6 +439,35 @@ function runMockReq(method, url) {
   return new Promise(resolve => setTimeout(() => resolve({ statusCode, headers, body }), 25));
 }
 
+// API requests need a readable body and resolve once the response has ended
+function apiReq(method, url, { body, headers = {} } = {}) {
+  return new Promise(resolve => {
+    const chunks = body === undefined ? [] : [Buffer.isBuffer(body) ? body : Buffer.from(typeof body === 'string' ? body : JSON.stringify(body))];
+    const req = Readable.from(chunks);
+    req.method = method;
+    req.url = url;
+    req.headers = {
+      host: 'localhost:3000',
+      'x-excaliflow': '1',
+      ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+      ...headers
+    };
+    let statusCode = 200;
+    let resHeaders = {};
+    let out = '';
+    const res = {
+      writeHead(code, hdrs) { statusCode = code; resHeaders = hdrs || {}; },
+      end(chunk) {
+        if (chunk) out += String(chunk);
+        let json = null;
+        try { json = JSON.parse(out); } catch { /* not JSON */ }
+        resolve({ statusCode, headers: resHeaders, body: out, json });
+      }
+    };
+    server.emit('request', req, res);
+  });
+}
+
 (async () => {
   const postRes = await runMockReq('POST', '/index.html');
   assert.strictEqual(postRes.statusCode, 405, 'POST requests must be rejected with 405');
@@ -453,6 +484,162 @@ function runMockReq(method, url) {
   assert(Number(headRes.headers['Content-Length']) > 1000, 'HEAD / must include Content-Length');
 
   console.log('[PASS] 7. Untrusted JSON import validation, Excalidraw arrow points[] import, and server.js security verified');
+
+  // 8. Verify the server.js workspace API (projects = folders, canvases = .excaliflow files)
+  const wsRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'excaliflow-ws-'));
+  server.setWorkspaceRoot(wsRoot);
+  try {
+    const noHeader = await apiReq('GET', '/api/workspace', { headers: { 'x-excaliflow': undefined } });
+    assert.strictEqual(noHeader.statusCode, 403, 'API requests without X-Excaliflow must be rejected');
+    const foreignHost = await apiReq('GET', '/api/workspace', { headers: { host: 'evil.example:3000' } });
+    assert.strictEqual(foreignHost.statusCode, 403, 'API requests with a foreign Host must be rejected (DNS rebinding)');
+    const plainText = await apiReq('POST', '/api/projects', { body: { name: 'X' }, headers: { 'content-type': 'text/plain' } });
+    assert.strictEqual(plainText.statusCode, 415, 'API writes must require a JSON content type (forces CORS preflight)');
+
+    const empty = await apiReq('GET', '/api/workspace');
+    assert.strictEqual(empty.statusCode, 200);
+    assert.deepStrictEqual(empty.json.projects, [], 'Fresh workspace should list no projects');
+
+    const proj = await apiReq('POST', '/api/projects', { body: { name: 'Payments' } });
+    assert.strictEqual(proj.statusCode, 201);
+    assert.strictEqual(proj.json.id, 'Payments');
+    const dupProj = await apiReq('POST', '/api/projects', { body: { name: 'payments' } });
+    assert.strictEqual(dupProj.json.id, 'payments 2', 'Project names must be made unique case-insensitively');
+    const sneaky = await apiReq('POST', '/api/projects', { body: { name: '../../escape' } });
+    assert.strictEqual(sneaky.json.id, 'escape', 'Path separators and leading dots must be stripped from new names');
+    assert(fs.existsSync(path.join(wsRoot, 'escape')), 'Sanitized project folder must be created inside the workspace');
+
+    const created = await apiReq('POST', '/api/projects/Payments/canvases', { body: { name: 'Checkout.excaliflow' } });
+    assert.strictEqual(created.statusCode, 201);
+    assert.strictEqual(created.json.id, 'Checkout', 'A trailing .excaliflow in a new canvas name must be dropped');
+    const canvasFile = path.join(wsRoot, 'Payments', 'Checkout.excaliflow');
+    assert.deepStrictEqual(JSON.parse(fs.readFileSync(canvasFile, 'utf8')).elements, [], 'New canvas file should hold an empty scene');
+
+    const read = await apiReq('GET', '/api/projects/Payments/canvases/Checkout');
+    assert.strictEqual(read.statusCode, 200);
+    const modified = Number(read.headers['X-Modified']);
+    assert(Number.isFinite(modified), 'Canvas reads must include X-Modified');
+
+    const badBody = await apiReq('PUT', '/api/projects/Payments/canvases/Checkout', { body: 'not json' });
+    assert.strictEqual(badBody.statusCode, 400, 'Non-JSON canvas bodies must be rejected');
+    const noElements = await apiReq('PUT', '/api/projects/Payments/canvases/Checkout', { body: { hello: 1 } });
+    assert.strictEqual(noElements.statusCode, 400, 'Canvas bodies without an elements array must be rejected');
+
+    const scene = { type: 'excaliflow', version: 2, elements: [{ id: 'n1', type: 'rectangle', x: 0, y: 0, width: 10, height: 10 }] };
+    const saved = await apiReq('PUT', '/api/projects/Payments/canvases/Checkout', {
+      body: scene,
+      headers: { 'if-unmodified-since-ms': String(modified) }
+    });
+    assert.strictEqual(saved.statusCode, 200, 'PUT with the current mtime must succeed');
+    assert.strictEqual(JSON.parse(fs.readFileSync(canvasFile, 'utf8')).elements[0].id, 'n1', 'PUT must write the canvas file');
+    assert.deepStrictEqual(fs.readdirSync(path.join(wsRoot, 'Payments')), ['Checkout.excaliflow'], 'Atomic writes must not leave temp files');
+
+    const stale = await apiReq('PUT', '/api/projects/Payments/canvases/Checkout', {
+      body: scene,
+      headers: { 'if-unmodified-since-ms': String(modified - 10000) }
+    });
+    assert.strictEqual(stale.statusCode, 409, 'PUT with a stale mtime must return 409 Conflict');
+
+    const huge = await apiReq('PUT', '/api/projects/Payments/canvases/Checkout', { body: Buffer.alloc(10 * 1024 * 1024 + 1, 32) });
+    assert.strictEqual(huge.statusCode, 413, 'Bodies over 10 MB must be rejected with 413');
+
+    for (const url of ['/api/projects/..%2F..%2Fetc/canvases/passwd', '/api/projects/%2E%2E/canvases/x', '/api/projects/Payments/canvases/..%2F..%2Fx']) {
+      const trav = await apiReq('GET', url);
+      assert([400, 403].includes(trav.statusCode), `Traversal ${url} must be rejected, got ${trav.statusCode}`);
+    }
+
+    const renamedCanvas = await apiReq('PATCH', '/api/projects/Payments/canvases/Checkout', { body: { name: 'Checkout v2' } });
+    assert.strictEqual(renamedCanvas.json.id, 'Checkout v2');
+    assert(fs.existsSync(path.join(wsRoot, 'Payments', 'Checkout v2.excaliflow')) && !fs.existsSync(canvasFile), 'Canvas rename must rename the file');
+
+    const renamedProject = await apiReq('PATCH', '/api/projects/Payments', { body: { name: 'Billing' } });
+    assert.strictEqual(renamedProject.json.id, 'Billing');
+    assert(fs.existsSync(path.join(wsRoot, 'Billing', 'Checkout v2.excaliflow')), 'Project rename must rename the folder');
+
+    const delCanvas = await apiReq('DELETE', '/api/projects/Billing/canvases/Checkout%20v2');
+    assert.strictEqual(delCanvas.statusCode, 200);
+    assert.strictEqual(fs.readdirSync(path.join(wsRoot, '.trash')).length, 1, 'Deleted canvases must be moved to .trash');
+    const delProject = await apiReq('DELETE', '/api/projects/Billing');
+    assert.strictEqual(delProject.statusCode, 200);
+    assert.strictEqual(fs.readdirSync(path.join(wsRoot, '.trash')).length, 2, 'Deleted projects must be moved to .trash');
+
+    const listing = await apiReq('GET', '/api/workspace');
+    assert.deepStrictEqual(listing.json.projects.map(p => p.id), ['escape', 'payments 2'], 'Listing must hide .trash and deleted projects');
+
+    const postStatic = await runMockReq('POST', '/index.html');
+    assert.strictEqual(postStatic.statusCode, 405, 'Static files must still reject non-GET/HEAD methods');
+  } finally {
+    fs.rmSync(wsRoot, { recursive: true, force: true });
+  }
+  console.log('[PASS] 8. Workspace API: projects/canvases CRUD, .trash deletes, 409 conflicts, size/type/host/traversal guards verified');
+
+  // 9. Verify client workspace session: open/switch canvases, autosave dirtiness, conflicts, scene round-trip
+  assert.strictEqual(app.sanitizeName('../x'), 'x');
+  assert.strictEqual(app.sanitizeName('a/b\\c'), 'abc');
+  assert.strictEqual(app.sanitizeName('  .hidden  '), 'hidden');
+  assert.strictEqual(app.sanitizeName(''), '');
+  assert.strictEqual(app.uniqueName('Untitled', ['untitled', 'Untitled 2']), 'Untitled 3');
+
+  const roundTrip = app.parseSceneJson(JSON.stringify(app.serializeScene()));
+  assert.strictEqual(roundTrip.elements.length, app.state.elements.length, 'serializeScene → parseSceneJson must round-trip elements');
+  assert(roundTrip.appState.camera, 'serializeScene must carry the camera');
+  assert.strictEqual(app.parseSceneJson('nope'), null, 'parseSceneJson must reject invalid JSON');
+  assert.strictEqual(app.parseSceneJson('{"elements":5}'), null, 'parseSceneJson must reject a non-array elements field');
+  assert.strictEqual(app.parseSceneJson('{"elements":[],"appState":{"flowMode":"evil"}}').appState.flowMode, undefined, 'parseSceneJson must drop invalid flow modes');
+
+  const store = app.createMemoryStore();
+  assert.strictEqual(await app.connectWorkspace(store), true, 'connectWorkspace should open a canvas');
+  const ws = app.state.workspace;
+  assert.strictEqual(ws.projectId, 'My Project', 'Empty workspace should get a starter project');
+  assert.strictEqual(ws.canvasId, 'Getting Started', 'Empty workspace should get a starter canvas');
+  assert(app.state.elements.length > 0, 'Starter canvas should hold the template');
+  assert(JSON.parse((await store.readCanvas('My Project', 'Getting Started')).text).elements.length > 0, 'Starter template must be saved to the file');
+  assert.strictEqual(app.isCanvasDirty(), false);
+
+  app.state.elements.push(app.createElement('rectangle', { id: 'ws_box', x: 10, y: 10, width: 100, height: 50 }));
+  assert.strictEqual(app.isCanvasDirty(), true, 'Adding an element must mark the canvas dirty');
+  assert.strictEqual(await app.flushSave(), true);
+  assert.strictEqual(app.isCanvasDirty(), false, 'flushSave must clear the dirty state');
+  assert(JSON.parse((await store.readCanvas('My Project', 'Getting Started')).text).elements.some(e => e.id === 'ws_box'), 'flushSave must write the element');
+  const savedScrollX = app.state.scrollX;
+  app.state.scrollX += 500;
+  app.state.zoom = 2;
+  assert.strictEqual(app.isCanvasDirty(), false, 'Camera-only changes must not mark the canvas dirty');
+  app.renderScenePasses(createMockCtx(), 1.5);
+  assert.strictEqual(app.isCanvasDirty(), false, 'Rendering must not mark the canvas dirty');
+
+  assert.strictEqual(await app.newCanvas('My Project', 'Second'), 'Second');
+  assert.strictEqual(ws.canvasId, 'Second');
+  assert.strictEqual(app.state.elements.length, 0, 'A new canvas starts empty');
+  app.pushHistory();
+  app.state.elements.push(app.createElement('ellipse', { id: 'ws_second', x: 0, y: 0, width: 80, height: 40 }));
+  assert(app.state.history.undoStack.length > 0);
+
+  assert.strictEqual(await app.openCanvas('My Project', 'Getting Started'), true);
+  assert(JSON.parse((await store.readCanvas('My Project', 'Second')).text).elements.some(e => e.id === 'ws_second'), 'Switching canvases must save the previous one first');
+  assert(app.state.elements.some(e => e.id === 'ws_box'), 'openCanvas must load the target canvas elements');
+  assert.strictEqual(app.state.history.undoStack.length, 0, 'openCanvas must empty the undo stack');
+  assert.strictEqual(app.state.history.redoStack.length, 0, 'openCanvas must empty the redo stack');
+  assert.strictEqual(app.state.scrollX, savedScrollX, 'openCanvas must restore the saved camera');
+
+  // Simulate an edit on disk (e.g. git pull) while the canvas is open
+  await store.writeCanvas('My Project', 'Getting Started', JSON.stringify({ elements: [{ id: 'disk_only', type: 'rectangle', x: 0, y: 0, width: 20, height: 20 }] }));
+  app.state.elements.push(app.createElement('rectangle', { id: 'ws_local', x: 300, y: 0, width: 60, height: 30 }));
+  assert.strictEqual(await app.flushSave(), false, 'Saving over an externally changed file must fail');
+  assert.strictEqual(ws.status, 'conflict');
+  assert.strictEqual(await app.openCanvas('My Project', 'Second'), false, 'Switching away during a conflict must be blocked');
+  await app.resolveConflict('reload');
+  assert.deepStrictEqual(app.state.elements.map(e => e.id), ['disk_only'], 'Reload from disk must load the external version');
+  assert.strictEqual(ws.status, 'saved');
+
+  app.state.elements.push(app.createElement('rectangle', { id: 'ws_after', x: 0, y: 100, width: 60, height: 30 }));
+  await store.writeCanvas('My Project', 'Getting Started', JSON.stringify({ elements: [] }));
+  assert.strictEqual(await app.flushSave(), false);
+  await app.resolveConflict('copy');
+  assert.strictEqual(ws.canvasId, 'Getting Started copy', 'Save as copy must switch to the new canvas');
+  assert(JSON.parse((await store.readCanvas('My Project', 'Getting Started copy')).text).elements.some(e => e.id === 'ws_after'), 'Save as copy must keep local edits');
+  console.log('[PASS] 9. Client workspace: starter canvas, autosave dirtiness (camera excluded), switch-saves, undo reset, conflict reload/copy verified');
+
   console.log('\nALL EXCALIFLOW VERIFICATION CHECKS PASSED SUCCESSFULLY!');
 })().catch(err => {
   console.error(err);
