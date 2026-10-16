@@ -139,7 +139,13 @@ vm.runInContext(scriptCode, sandbox);
 sandbox.initStudioDOM();
 const app = sandbox.window;
 assert(app.state.elements.length > 0, 'Initial template should populate elements');
-assert.strictEqual(app.createElement('rectangle').fillStyle, 'none', 'New shapes default to no fill, like Excalidraw');
+assert.strictEqual(app.createElement('rectangle').fillStyle, 'solid', 'New shapes default to a solid tint fill');
+assert.strictEqual(app.createElement('rectangle').roughness, 0, 'New shapes default to Clean sloppiness');
+assert.strictEqual(app.createElement('rectangle').strokeWidth, 2.2, 'New shapes default to Bold stroke');
+assert.strictEqual(app.createElement('rectangle').strokeStyle, 'solid', 'New shapes default to a solid stroke');
+assert.strictEqual(app.createElement('rectangle').fontFamily, 'hand', 'New shapes default to the Hand font');
+assert.strictEqual(app.state.flowSpeed, 0.6, 'Flow speed defaults to 0.6x');
+assert.strictEqual(app.state.flowMode, 'aurora', 'Flow animation defaults to Aurora');
 assert.strictEqual(app.createElement('arrow').curveType, 'straight', 'New arrows default to straight');
 assert.strictEqual(app.createElement('sticky').fillStyle, 'solid', 'Sticky notes keep a solid fill');
 console.log('[PASS] 1. Zero syntax or runtime initialization errors (initial scene loaded, Excalidraw-style defaults)');
@@ -708,6 +714,186 @@ function apiReq(method, url, { body, headers = {} } = {}) {
   app.setTool('select');
   app.state.flowMode = 'comets';
   console.log('[PASS] 10. Flow None/Aurora (light & dark), canvas background presets & validation, letter shortcuts verified');
+
+  // 11. Flow Stories: auto-draft, authoring, persistence & sanitizing, presenter keys, spotlight rendering
+  // Sandbox arrays come from another realm, so normalize before deepStrictEqual
+  const plain = v => JSON.parse(JSON.stringify(v));
+  app.stopStory();
+  app.loadTemplate('RAG Pipeline');
+  const autoSteps = app.state.story.steps;
+  // Depths: User Query 0, Embedding 1, Vector DB + LLM 2, Reranker 3 → overview + 4 layers
+  assert.strictEqual(autoSteps.length, 5, 'Templates ship with an auto-drafted story: overview + one step per depth layer');
+  assert.deepStrictEqual(plain(autoSteps[0].focusIds), [], 'Auto-story opens with an overview step');
+  assert.deepStrictEqual(plain(autoSteps[1].focusIds), ['r_q'], 'First layer step spotlights the root node only');
+  assert.strictEqual(autoSteps[1].caption, 'User Query', 'Layer captions come from node labels');
+  assert(autoSteps[2].focusIds.includes('r_emb'), 'Second layer spotlights the embedding node');
+  assert(autoSteps[2].focusIds.some(id => app.state.elements.find(el => el.id === id)?.type === 'arrow'),
+    'Layer steps include the arrows that deliver into the layer');
+  assert.strictEqual(autoSteps[2].caption, 'Embedding Encoder', 'Multi-line labels collapse to one line');
+
+  const keyBeforeStoryEdit = app.sceneContentKey();
+  app.state.selectedIds = new Set(['r_vec', 'r_llm']);
+  const custom = app.addStoryStepFromSelection();
+  assert.deepStrictEqual(Array.from(custom.focusIds).sort(), ['r_llm', 'r_vec'], '+ Step spotlights exactly the selection');
+  assert.notStrictEqual(app.sceneContentKey(), keyBeforeStoryEdit, 'Story edits must make the canvas dirty');
+  app.state.selectedIds.clear();
+  const overviewStep = app.addStoryStepFromSelection();
+  assert.deepStrictEqual(plain(overviewStep.focusIds), [], 'With nothing selected, + Step adds an overview step');
+  assert(app.setStoryCaption(custom.id, '  Retrieve & answer  '), 'Captions are editable');
+  assert.strictEqual(custom.caption, 'Retrieve & answer', 'Captions are trimmed');
+  assert(app.deleteStoryStep(overviewStep.id) && app.state.story.steps.length === 6, 'Steps can be deleted');
+
+  const storyRoundTrip = app.parseSceneJson(JSON.stringify(app.serializeScene()));
+  assert.deepStrictEqual(plain(storyRoundTrip.appState.story), plain(app.state.story),
+    'Story round-trips through save and load');
+  const hostileStory = app.sanitizeStory({
+    steps: [
+      { id: '<script>', caption: 42, focusIds: ['ok', 7, '', 'x'.repeat(200), 'ok'] },
+      'nope',
+      { id: 'dup', caption: 'y'.repeat(400) },
+      { id: 'dup', caption: 'second' },
+      ...Array.from({ length: 150 }, (_, i) => ({ id: `s${i}`, caption: 'c', focusIds: [] }))
+    ]
+  });
+  assert.strictEqual(hostileStory.steps.length, 100, 'Stories are capped at 100 steps');
+  assert.notStrictEqual(hostileStory.steps[0].id, '<script>', 'Unsafe step ids are regenerated');
+  assert.strictEqual(hostileStory.steps[0].caption, '', 'Non-string captions are dropped');
+  assert.deepStrictEqual(plain(hostileStory.steps[0].focusIds), ['ok'], 'focusIds keep only unique, sane strings');
+  assert.strictEqual(hostileStory.steps[1].caption.length, 280, 'Captions are capped at 280 chars');
+  assert.notStrictEqual(hostileStory.steps[2].id, 'dup', 'Duplicate step ids are regenerated');
+  assert.deepStrictEqual(plain(app.sanitizeStory('garbage')), { steps: [] }, 'Non-object stories sanitize to empty');
+  assert.deepStrictEqual(plain(app.parseSceneJson(JSON.stringify({ elements: [], appState: { story: { steps: 'x' } } })).appState.story), { steps: [] },
+    'Malformed story JSON never breaks scene loading');
+
+  // Presenter mode: navigation and camera moves never dirty the canvas
+  const keyBeforePlay = app.sceneContentKey();
+  assert.strictEqual(app.getStoryFocusSet(), null, 'No spotlight while stopped');
+  app.state.activePulses = [];
+  assert(app.startStory(), 'Story starts');
+  assert.strictEqual(app.state.storyPlayer.index, 0, 'Playback starts on step 1');
+  assert.strictEqual(app.getStoryFocusSet(), null, 'Overview step dims nothing');
+  assert(app.state.activePulses.length > 0, 'Overview step fires bursts from the flow roots');
+  app.handleKeyDown({ key: 'ArrowRight' });
+  assert.strictEqual(app.state.storyPlayer.index, 1, 'ArrowRight advances');
+  assert.deepStrictEqual(Array.from(app.getStoryFocusSet()), ['r_q'], 'Spotlight follows the current step');
+  app.handleKeyDown({ key: ' ' });
+  app.handleKeyDown({ key: 'ArrowLeft' });
+  assert.strictEqual(app.state.storyPlayer.index, 1, 'Space advances and ArrowLeft goes back');
+  app.handleKeyDown({ key: 'r' });
+  assert.strictEqual(app.state.activeTool, 'select', 'Tool shortcuts are swallowed while presenting');
+  app.handleKeyDown({ key: 'Delete' });
+  assert(app.state.elements.some(el => el.id === 'r_q'), 'Delete never edits the diagram while presenting');
+  const tween = app.state.storyPlayer.tween;
+  assert(tween && tween.to.zoom > 0, 'Each step glides the camera to frame its spotlight');
+  app.advanceStoryTween(0);
+  app.advanceStoryTween(10);
+  assert.strictEqual(app.state.storyPlayer.tween, null, 'Camera glide completes');
+  assert.strictEqual(app.state.zoom, tween.to.zoom, 'Camera lands on the step framing');
+  app.pointerDownWorld(0, 0, {});
+  app.pointerUpWorld(0, 0);
+  assert.strictEqual(app.state.storyPlayer.index, 2, 'Clicking the canvas advances the story');
+
+  // Spotlight rendering: unfocused layer, veil over the whole world, then the focused layer
+  const spotCtx = createMockCtx();
+  app.renderScenePasses(spotCtx, 0, { focusSet: app.getStoryFocusSet(), canvasBg: '#ffffff' });
+  const veilIdx = spotCtx.calls.findIndex(c => c.fn === 'fillRect' && c.w >= 1e6);
+  assert(veilIdx > 0, 'Spotlight draws a veil over unfocused elements');
+  assert(spotCtx.calls.slice(veilIdx).some(c => c.fn === 'fillText' && /Embedding/.test(c.text)), 'Focused labels draw above the veil');
+  assert(!spotCtx.calls.slice(veilIdx).some(c => c.fn === 'fillText' && /Reranker/.test(c.text)), 'Unfocused labels stay under the veil');
+  const plainCtx = createMockCtx();
+  app.renderScenePasses(plainCtx, 0, {});
+  assert(!plainCtx.calls.some(c => c.fn === 'fillRect' && c.w >= 1e6), 'No veil outside story playback');
+
+  app.handleKeyDown({ key: 'Escape' });
+  assert(!app.state.storyPlayer.playing && app.state.storyPlayer.index === -1, 'Escape exits the story');
+  app.advanceStoryTween(20);
+  app.advanceStoryTween(30);
+  assert.strictEqual(app.sceneContentKey(), keyBeforePlay, 'Presenting never makes the canvas dirty');
+  app.handleKeyDown({ key: 'P', shiftKey: true });
+  assert(app.state.storyPlayer.playing, 'Shift+P starts the story');
+  app.stopStory();
+  app.handleKeyDown({ key: 'r' });
+  assert.strictEqual(app.state.activeTool, 'rectangle', 'Tool shortcuts work again after the story ends');
+  app.setTool('select');
+
+  // Applying a scene replaces the story; one keystroke still presents a story-less diagram
+  app.applyScene({ elements: app.parseSceneJson(JSON.stringify(app.serializeScene())).elements, appState: {} });
+  assert.strictEqual(app.state.story.steps.length, 0, 'Scenes without a story load with an empty story');
+  assert(app.startStory() && app.state.story.steps.length === 5, 'Playing with no steps drafts an auto-story first');
+  app.stopStory();
+
+  // Templates open as a new canvas and never overwrite the canvas you are on
+  assert(app.state.workspace.store, 'Workspace store is still connected from section 9');
+  await app.flushSave();
+  const wsBefore = { ...app.state.workspace };
+  const keyOfOpenCanvas = app.sceneContentKey();
+  const templateCanvas = await app.openTemplate('Microservices');
+  assert.strictEqual(templateCanvas, 'Microservices', 'Template opens as a canvas named after the template');
+  assert.strictEqual(app.state.workspace.projectId, wsBefore.projectId, 'Template canvas lands in the current project');
+  assert.strictEqual(app.state.workspace.canvasId, 'Microservices', 'The new template canvas becomes the open canvas');
+  assert(!app.isCanvasDirty(), 'The new template canvas is saved immediately');
+  assert.strictEqual(app.state.history.undoStack.length, 0, 'Template canvas starts with empty undo history');
+  assert(app.state.story.steps.length > 0, 'Template canvas comes with its auto-story');
+  await app.openCanvas(wsBefore.projectId, wsBefore.canvasId);
+  assert.strictEqual(app.sceneContentKey(), keyOfOpenCanvas, 'The previously open canvas is left untouched');
+  assert.strictEqual(await app.openTemplate('Microservices'), 'Microservices 2', 'Repeated templates get unique canvas names');
+  console.log('[PASS] 11. Flow Stories: auto-draft, authoring, save/load sanitizing, presenter keys & clicks, camera glide, spotlight veil, templates open as new canvases verified');
+
+  // 12. Excalidraw-style text tool: T on empty canvas = free text box at the cursor, T on a shape = its label
+  const textCountBefore = app.state.elements.length;
+  const undoBeforeText = app.state.history.undoStack.length;
+  app.setTool('text');
+  app.pointerDownWorld(5000, 5000, {});
+  app.pointerUpWorld(5000, 5000);
+  const freeText = app.state.elements[app.state.elements.length - 1];
+  assert.strictEqual(freeText.type, 'text', 'T on empty canvas creates a text element');
+  assert.strictEqual(freeText.text, '', 'New text starts empty (no "Label" placeholder)');
+  assert.strictEqual(freeText.textAlign, 'left', 'Free text is left-aligned like Excalidraw');
+  assert.strictEqual(app.state.editingId, freeText.id, 'The editor opens immediately');
+  assert.strictEqual(app.state.activeTool, 'select', 'Tool returns to select after placing text');
+  const anchorX = freeText.x;
+  const anchorY = freeText.y;
+  assert(Math.abs(anchorX + 4 - 5000) < 0.01, 'Text starts at the click point');
+  const emptyWidth = freeText.width;
+  app.commitInlineEditor('Hello world');
+  assert.strictEqual(freeText.text, 'Hello world', 'Typed text is committed');
+  assert(freeText.width > emptyWidth, 'Free text grows as you type');
+  assert.strictEqual(freeText.x, anchorX, 'Free text grows to the right (left edge stays put)');
+  assert.strictEqual(freeText.y, anchorY, 'Free text keeps its top edge');
+  const textCtx = createMockCtx();
+  app.drawElementText(textCtx, freeText, { canvasBg: '#ffffff' });
+  const drawn = textCtx.calls.find(c => c.fn === 'fillText');
+  assert(drawn && Math.abs(drawn.x - (anchorX + 4)) < 0.01, 'Free text renders from its left edge');
+  const oneLineH = freeText.height;
+  app.autoFitElementToText(freeText, 'Line one\nLonger line two');
+  assert(freeText.height > oneLineH && freeText.x === anchorX && freeText.y === anchorY, 'New lines grow the box downward');
+  app.autoFitElementToText(freeText, 'Hi');
+  assert(freeText.width < 40, 'Free text shrinks back when text is deleted');
+  app.autoFitElementToText(freeText, 'Hello world');
+
+  app.setTool('text');
+  app.pointerDownWorld(7000, 7000, {});
+  app.commitInlineEditor('   ');
+  assert.strictEqual(app.state.elements.length, textCountBefore + 1, 'Text left empty is discarded');
+  assert.strictEqual(app.state.history.undoStack.length, undoBeforeText + 1, 'Placing + typing text is one undo step, and discarded empty text leaves none');
+  app.undo();
+  assert(!app.state.elements.some(el => el.id === freeText.id), 'One undo removes the typed text box');
+  app.redo();
+  const restoredText = app.state.elements.find(el => el.id === freeText.id);
+  assert(restoredText && restoredText.text === 'Hello world', 'Redo brings it back');
+
+  const labelTarget = app.state.elements.find(el => el.type === 'rectangle');
+  app.setTool('text');
+  app.pointerDownWorld(labelTarget.x + labelTarget.width / 2, labelTarget.y + labelTarget.height / 2, {});
+  assert.strictEqual(app.state.editingId, labelTarget.id, 'T on a shape edits that shape\'s label');
+  assert.strictEqual(app.state.elements.length, textCountBefore + 1, 'T on a shape does not create a separate text element');
+  app.commitInlineEditor('Renamed service');
+  assert.strictEqual(labelTarget.text, 'Renamed service', 'Shape label updated through the text tool');
+
+  assert.strictEqual(app.createElement('text', { text: 'legacy' }).textAlign, 'center', 'Older text elements keep centered rendering');
+  const reloaded = app.parseSceneJson(JSON.stringify(app.serializeScene())).elements.find(el => el.id === restoredText.id);
+  assert.strictEqual(reloaded.textAlign, 'left', 'textAlign survives save and load');
+  console.log('[PASS] 12. Defaults (Solid, Bold/Solid, Clean, Hand, Aurora 0.6x) and Excalidraw-style text tool verified');
 
   console.log('\nALL EXCALIFLOW VERIFICATION CHECKS PASSED SUCCESSFULLY!');
 })().catch(err => {
