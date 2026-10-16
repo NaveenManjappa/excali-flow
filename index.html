@@ -1136,11 +1136,11 @@
         <span class="dock-key">Q</span>
       </button>
       <div class="v-divider"></div>
-      <button class="dock-tool-btn active" data-tool="select" title="Selection — Move, resize, bend arrows (V or 1)">
+      <button class="dock-tool-btn" data-tool="select" title="Selection — Move, resize, bend arrows (V or 1)">
         <svg viewBox="0 0 24 24"><path d="M4 4l7.07 17 2.51-7.39L21 11.07z"/></svg>
         <span class="dock-key">V</span>
       </button>
-      <button class="dock-tool-btn" data-tool="hand" title="Hand — Pan canvas (H or Space)">
+      <button class="dock-tool-btn active" data-tool="hand" title="Hand — Pan canvas (H or Space)">
         <svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0v4"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
         <span class="dock-key">H</span>
       </button>
@@ -1571,7 +1571,7 @@
       hoveredResizeHandle: null,
       splitTargetArrowId: null,
       snapPreview: null,
-      activeTool: 'select',
+      activeTool: 'hand',
       toolLocked: false,
       canvasBg: '#ffffff',
       // UI theme is a per-user preference (localStorage), not scene content; dark renders canvasBg through a filter
@@ -5836,6 +5836,7 @@
       document.querySelectorAll('#bottomToolDock [data-tool]').forEach(btn => {
         btn.addEventListener('click', () => setTool(btn.getAttribute('data-tool')));
       });
+      setTool(state.activeTool);
 
       document.getElementById('zoomOutBtn')?.addEventListener('click', () => setZoom(state.zoom * 0.85));
       document.getElementById('zoomInBtn')?.addEventListener('click', () => setZoom(state.zoom * 1.15));
