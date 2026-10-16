@@ -888,6 +888,183 @@
       box-shadow: 0 4px 16px rgba(105, 101, 219, 0.22);
     }
 
+    /* Flow Stories: authoring strip, presenter caption and distraction-free playback */
+    #storyStrip {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 21;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px;
+      /* stays clear of the undo pill (left) and the zoom pill (right) */
+      max-width: calc(100vw - 440px);
+    }
+
+    body.story-strip-open #storyStrip { display: flex; }
+    body.story-strip-open #canvasHintPill { display: none; }
+
+    .story-strip-head {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .story-step-list {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      padding: 2px 2px 2px 6px;
+      border-left: 1px solid var(--divider);
+    }
+
+    .story-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      height: 32px;
+      padding: 0 4px 0 3px;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      background: var(--surface-subtle);
+    }
+
+    .story-chip:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--surface-active);
+    }
+
+    .story-chip-num {
+      width: 22px;
+      height: 22px;
+      border: none;
+      border-radius: 6px;
+      background: var(--surface-active);
+      color: var(--accent-strong);
+      font: 600 11px var(--font-sans);
+      cursor: pointer;
+    }
+
+    .story-chip-num:hover { background: var(--accent); color: #fff; }
+
+    .story-chip-caption {
+      width: 150px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-primary);
+      font: 13px var(--font-hand);
+    }
+
+    .story-chip-meta {
+      font: 10px var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .story-chip-del {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+
+    .story-chip-del:hover { color: var(--danger); }
+
+    .story-empty {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      padding: 0 6px;
+      white-space: nowrap;
+    }
+
+    #storyCaption {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 280px;
+      max-width: calc(100vw - 48px);
+      padding: 8px 10px;
+      border-radius: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    #storyCaption.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    #storyCaption .ui-btn {
+      font-size: 17px;
+      padding: 0 8px;
+    }
+
+    .story-counter {
+      font: 600 11px var(--font-mono);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .story-caption-text {
+      flex: 1;
+      text-align: center;
+      font: 24px/1.25 var(--font-hand);
+      color: var(--text-primary);
+      padding: 0 8px;
+    }
+
+    .story-caption-text.enter { animation: storyCaptionIn 0.45s ease both; }
+
+    @keyframes storyCaptionIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    body.story-playing #topHeaderBar,
+    body.story-playing #leftSidebar,
+    body.story-playing #projectsPanel,
+    body.story-playing #conflictBar,
+    body.story-playing #bottomLeftBar,
+    body.story-playing #zoomPill,
+    body.story-playing #canvasHintPill,
+    body.story-playing #quickHud,
+    body.story-playing #storyStrip {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.3s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .story-caption-text.enter { animation: none; }
+    }
+
+    #inlineEditorWrap.free-text #inlineTextEditor {
+      min-width: 0;
+      min-height: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      text-align: left;
+      white-space: pre;
+      line-height: 1.25;
+    }
+
     /* Toast status notification */
     #studioToast {
       position: fixed;
@@ -1005,12 +1182,17 @@
       </button>
     </nav>
 
-    <!-- Right Island: Live Flow Pill + Canvas Theme + Share/Export -->
+    <!-- Right Island: Story + Live Flow Pill + Canvas Theme + Share/Export -->
     <div class="header-group glass-panel">
+      <button id="storyToggleBtn" class="ui-btn" title="Flow Story: present the diagram step by step (Shift+P plays)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg>
+        <span>Story</span>
+      </button>
+      <div class="v-divider"></div>
       <div id="masterFlowPill">
         <span id="flowStatusDot" class="flow-status-dot"></span>
         <button id="masterFlowBtn" class="ui-btn active" title="Toggle Live 60fps Causal Data Flow">Flow: ON</button>
-        <span id="flowBadgeText" class="flow-badge-meta">COMETS · 1X</span>
+        <span id="flowBadgeText" class="flow-badge-meta">AURORA · 0.6X</span>
       </div>
       <div class="v-divider"></div>
       <button id="themeToggleBtn" class="ui-btn" title="Dark mode (Alt+Shift+D)">☾</button>
@@ -1092,8 +1274,8 @@
       <div class="segmented-row" id="fillStyleRow">
         <button class="seg-btn" data-fill-style="hachure" title="Hachure Sketch Fill">Sketch</button>
         <button class="seg-btn" data-fill-style="cross-hatch" title="Cross-Hatch Fill">Cross</button>
-        <button class="seg-btn" data-fill-style="solid" title="Solid Tint Fill">Solid</button>
-        <button class="seg-btn active" data-fill-style="none" title="Outline Only">None</button>
+        <button class="seg-btn active" data-fill-style="solid" title="Solid Tint Fill">Solid</button>
+        <button class="seg-btn" data-fill-style="none" title="Outline Only">None</button>
       </div>
     </div>
 
@@ -1116,8 +1298,8 @@
     <div class="sidebar-section">
       <div class="section-title"><span>Sloppiness &amp; Arrow</span></div>
       <div class="segmented-row" id="roughnessRow">
-        <button class="seg-btn" data-roughness="0">Clean</button>
-        <button class="seg-btn active" data-roughness="0.85">Artist</button>
+        <button class="seg-btn active" data-roughness="0">Clean</button>
+        <button class="seg-btn" data-roughness="0.85">Artist</button>
         <button class="seg-btn" data-roughness="1.75">Cartoon</button>
       </div>
       <div class="segmented-row" id="curveTypeRow">
@@ -1147,16 +1329,16 @@
     <div class="sidebar-section">
       <div class="section-title"><span>Flow Animation</span></div>
       <div class="grid-2x2" id="flowModeGrid">
-        <button class="seg-btn active" data-flow-mode="comets">☄ Comets</button>
+        <button class="seg-btn" data-flow-mode="comets">☄ Comets</button>
         <button class="seg-btn" data-flow-mode="pulses">◎ Pulses</button>
         <button class="seg-btn" data-flow-mode="neon">⚡ Neon</button>
         <button class="seg-btn" data-flow-mode="dashed">⋯ Stream</button>
-        <button class="seg-btn" data-flow-mode="aurora" title="Warm-to-cool glowing trail — great for tutorials">✦ Aurora</button>
+        <button class="seg-btn active" data-flow-mode="aurora" title="Warm-to-cool glowing trail — great for tutorials">✦ Aurora</button>
         <button class="seg-btn" data-flow-mode="none" title="No ambient animation (pulse bursts still play)">⊘ None</button>
       </div>
       <div class="segmented-row" id="flowSpeedRow">
-        <button class="seg-btn" data-flow-speed="0.6">0.6x</button>
-        <button class="seg-btn active" data-flow-speed="1">1x</button>
+        <button class="seg-btn active" data-flow-speed="0.6">0.6x</button>
+        <button class="seg-btn" data-flow-speed="1">1x</button>
         <button class="seg-btn" data-flow-speed="1.8">1.8x</button>
       </div>
     </div>
@@ -1215,6 +1397,27 @@
     <span><span class="hint-key">Double-click</span> canvas to add node</span>
     <span><span class="hint-key">Drag</span> arrow ends to slide around shapes</span>
     <span><span class="hint-key">Tab</span> to chain</span>
+  </div>
+
+  <!-- Flow Story authoring strip (toggled from the header) -->
+  <div id="storyStrip" class="glass-panel" aria-label="Flow Story steps">
+    <div class="story-strip-head">
+      <button id="storyAddBtn" class="ui-btn" title="Add a step that spotlights the selection (nothing selected = whole diagram)">+ Step</button>
+      <button id="storyAutoBtn" class="ui-btn" title="Draft steps from the flow order">Auto</button>
+      <div class="v-divider"></div>
+      <button id="storyPlayBtn" class="ui-btn primary" title="Present (Shift+P) · → / Space next · ← back · Esc exit">▶ Play</button>
+      <button id="storyRecordBtn" class="ui-btn" title="Export the story as a 1080p video">● Rec</button>
+    </div>
+    <div id="storyStepList" class="story-step-list"></div>
+  </div>
+
+  <!-- Flow Story presenter caption -->
+  <div id="storyCaption" class="glass-panel" aria-live="polite">
+    <button id="storyPrevBtn" class="ui-btn" title="Previous step (←)">‹</button>
+    <span id="storyCounter" class="story-counter"></span>
+    <span id="storyCaptionText" class="story-caption-text"></span>
+    <button id="storyNextBtn" class="ui-btn" title="Next step (→ / Space / click)">›</button>
+    <button id="storyExitBtn" class="ui-btn" title="Exit story (Esc)">✕</button>
   </div>
 
   <!-- Bottom-Right Zoom Pill -->
@@ -1377,17 +1580,21 @@
       scrollY: 0,
       zoom: 1,
       flowEnabled: true,
-      flowMode: 'comets',
-      flowSpeed: 1.0,
+      flowMode: 'aurora',
+      flowSpeed: 0.6,
       activePulses: [],
       laserPoints: [],
       nodeArrivalEnergy: new Map(),
+      // Flow Stories (section 18): steps are scene content; the player is transient and never saved
+      story: { steps: [] },
+      storyPlayer: { playing: false, index: -1, tween: null, savedCamera: null },
+      storyPanelOpen: false,
       defaults: {
         strokeColor: '#171717',
-        fillStyle: 'none',
+        fillStyle: 'solid',
         fontFamily: 'hand',
         fontSize: 15,
-        roughness: 0.85,
+        roughness: 0,
         strokeWidth: 2.2,
         strokeStyle: 'solid',
         curveType: 'straight'
@@ -2831,15 +3038,25 @@
 
       ctx.save();
       ctx.font = getFontCss(el.fontFamily, fontSize);
-      ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      ctx.fillStyle = strokeColor;
 
+      if (isFreeText(el)) {
+        ctx.textAlign = 'left';
+        const startY = el.y + TEXT_PAD + lineHeight / 2;
+        for (let i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], el.x + TEXT_PAD, startY + i * lineHeight);
+        }
+        ctx.restore();
+        return;
+      }
+
+      ctx.textAlign = 'center';
       const centerX = el.x + (el.width || 0) / 2;
       const centerY = el.y + (el.height || 0) / 2;
       const totalTextH = lines.length * lineHeight;
       const startY = centerY - totalTextH / 2 + lineHeight / 2;
 
-      ctx.fillStyle = strokeColor;
       for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], centerX, startY + i * lineHeight);
       }
@@ -2865,14 +3082,34 @@
         }
       }
 
+      // Story spotlight: draw the unfocused layer, veil it with the background, then draw the focus on top.
+      // A veil (rather than globalAlpha) keeps every element's own alpha choreography intact.
+      const focusSet = opts.focusSet || null;
+      if (focusSet) {
+        drawSceneLayer(ctx, elements, arrowGeoms, arrowDepths, timeSec, opts, el => !isStoryFocused(el, focusSet));
+        ctx.save();
+        ctx.globalAlpha = STORY_VEIL_ALPHA;
+        ctx.fillStyle = opts.canvasBg || getEffectiveCanvasBg();
+        ctx.fillRect(-1e6, -1e6, 2e6, 2e6);
+        ctx.restore();
+        drawSceneLayer(ctx, elements, arrowGeoms, arrowDepths, timeSec, opts, el => isStoryFocused(el, focusSet));
+      } else {
+        drawSceneLayer(ctx, elements, arrowGeoms, arrowDepths, timeSec, opts, null);
+      }
+
+      return arrowGeoms;
+    }
+
+    // The three occlusion-free passes (shapes, arrows + particles, text) over the elements passing `include`
+    function drawSceneLayer(ctx, elements, arrowGeoms, arrowDepths, timeSec, opts, include) {
       for (const el of elements) {
-        if (el.type !== 'arrow') {
+        if (el.type !== 'arrow' && (!include || include(el))) {
           drawStaticElement(ctx, el, opts);
         }
       }
 
       for (const el of elements) {
-        if (el.type === 'arrow') {
+        if (el.type === 'arrow' && (!include || include(el))) {
           const geom = arrowGeoms.get(el.id);
           const depth = arrowDepths.get(el.id) || 0;
           drawArrowAndParticles(ctx, el, geom, depth, timeSec, opts);
@@ -2880,12 +3117,10 @@
       }
 
       for (const el of elements) {
-        if (el.type !== 'arrow') {
+        if (el.type !== 'arrow' && (!include || include(el))) {
           drawElementText(ctx, el, opts);
         }
       }
-
-      return arrowGeoms;
     }
 
     /* -------------------------------------------------------------------------
@@ -3107,6 +3342,13 @@
       return measureCtx;
     }
 
+    // Excalidraw-style free text: a left-aligned text element anchored at its top-left corner
+    const TEXT_PAD = 4;
+    const TEXT_MIN_WIDTH = 12;
+    function isFreeText(el) {
+      return el?.type === 'text' && el.textAlign === 'left';
+    }
+
     function autoFitElementToText(el, text) {
       if (!el || el.type === 'arrow') return;
       el.text = text;
@@ -3125,6 +3367,17 @@
         for (const line of lines) {
           maxLineW = Math.max(maxLineW, (line || '').length * fontSize * 0.58);
         }
+      }
+
+      if (isFreeText(el)) {
+        const nextW = Math.max(TEXT_MIN_WIDTH, Math.ceil(maxLineW + TEXT_PAD * 2));
+        const nextH = Math.ceil(lines.length * lineHeight + TEXT_PAD * 2);
+        if (nextW !== el.width || nextH !== el.height) {
+          el.width = nextW;
+          el.height = nextH;
+          ShapeCache.invalidate(el);
+        }
+        return;
       }
 
       const cx = el.x + el.width / 2;
@@ -3182,6 +3435,7 @@
         strokeStyle: props.strokeStyle || d.strokeStyle,
         curveType: props.curveType || d.curveType,
         curveOffset: Number(props.curveOffset) || 0,
+        textAlign: props.textAlign === 'left' ? 'left' : 'center',
         text: type === 'arrow' ? '' : (props.text ?? ''),
         seed,
         versionNonce: 1,
@@ -3349,7 +3603,7 @@
       state.activePulses = [];
       ShapeCache.clear();
 
-      const addNode = (id, type, x, y, w, h, text, color, fillStyle = 'hachure') => {
+      const addNode = (id, type, x, y, w, h, text, color, fillStyle = state.defaults.fillStyle) => {
         const el = createElement(type, { id, x, y, width: w, height: h, text, strokeColor: color, fillStyle });
         state.elements.push(el);
         return el;
@@ -3424,6 +3678,9 @@
         addEdge(n4, n5, -18, '#06b6d4');
       }
 
+      // Every template ships with a ready-to-play walkthrough
+      stopStory();
+      buildAutoStory();
       fitToScreen();
       syncUIWithSelection();
     }
@@ -3752,6 +4009,12 @@
       const altKey = Boolean(opts.altKey);
       const tool = state.activeTool;
 
+      // Presenting: a click advances the story instead of editing (panning and the laser still work)
+      if (state.storyPlayer.playing && tool !== 'hand' && tool !== 'laser' && !state.isSpacePanning) {
+        storyNext();
+        return;
+      }
+
       if (tool === 'hand' || state.isSpacePanning) {
         state.drag = {
           mode: 'pan',
@@ -3794,16 +4057,46 @@
         return;
       }
 
-      if (tool === 'text' || tool === 'sticky') {
+      // Text tool, like Excalidraw: clicking a shape edits that shape's label; clicking empty canvas
+      // starts an empty free-text box at the cursor that grows as you type (discarded if left empty)
+      if (tool === 'text') {
+        const hit = hitTestElement(wx, wy);
+        if (hit && isNodeElement(hit)) {
+          state.selectedIds = new Set([hit.id]);
+          if (!state.toolLocked) setTool('select');
+          syncUIWithSelection();
+          startInlineEditing(hit);
+          return;
+        }
+        // No pushHistory here: creating + typing is one undo step, recorded when the editor commits
+        const preSnap = snapshotScene();
+        const fontSize = Number(state.defaults.fontSize) || 15;
+        const lineH = Math.round(fontSize * EXCALIDRAW_LINE_HEIGHT);
+        const el = createElement('text', {
+          x: wx - TEXT_PAD,
+          y: wy - lineH / 2 - TEXT_PAD,
+          text: '',
+          textAlign: 'left'
+        });
+        autoFitElementToText(el, '');
+        state.elements.push(el);
+        state.selectedIds = new Set([el.id]);
+        if (!state.toolLocked) setTool('select');
+        syncUIWithSelection();
+        startInlineEditing(el, { preSnap });
+        return;
+      }
+
+      if (tool === 'sticky') {
         pushHistory();
-        const w = tool === 'sticky' ? 156 : 120;
-        const h = tool === 'sticky' ? 112 : 38;
+        const w = 156;
+        const h = 112;
         const el = createElement(tool, {
           x: wx - w / 2,
           y: wy - h / 2,
           width: w,
           height: h,
-          text: tool === 'sticky' ? 'Sticky Note' : 'Label'
+          text: 'Sticky Note'
         });
         state.elements.push(el);
         state.selectedIds.clear();
@@ -4396,45 +4689,71 @@
     /* -------------------------------------------------------------------------
      * 13. Inline Text Editor & Keyboard Shortcuts
      * ------------------------------------------------------------------------- */
-    function startInlineEditing(el) {
+    function startInlineEditing(el, { preSnap = null } = {}) {
       if (!el || el.type === 'arrow' || typeof document === 'undefined') return;
       state.editingId = el.id;
-      state.editingPreSnap = snapshotScene();
+      state.editingPreSnap = preSnap || snapshotScene();
       const wrap = document.getElementById('inlineEditorWrap');
       const ta = document.getElementById('inlineTextEditor');
       if (!wrap || !ta) return;
 
-      const cx = el.x + (el.width || 0) / 2;
-      const cy = el.y + (el.height || 0) / 2;
-
-      const scr = worldToScreen(cx, cy);
-      const fontSize = (Number(el.fontSize) || 16) * state.zoom;
-      const w = Math.max(120, ((el.width || 120) - 12) * state.zoom);
-      const h = Math.max(36, ((el.height || 44) - 8) * state.zoom);
-
       wrap.style.display = 'block';
-      wrap.style.left = `${scr.x - w / 2}px`;
-      wrap.style.top = `${scr.y - h / 2}px`;
-      ta.style.width = `${w}px`;
-      ta.style.height = `${h}px`;
+      wrap.classList.toggle('free-text', isFreeText(el));
       ta.style.fontFamily = FONT_MAP[normalizeFontFamily(el.fontFamily)];
-      ta.style.fontSize = `${fontSize}px`;
+      ta.style.fontSize = `${(Number(el.fontSize) || 16) * state.zoom}px`;
       ta.style.color = resolveStrokeColor(el.strokeColor, getEffectiveCanvasBg());
       ta.value = el.text || '';
+      positionInlineEditor(el);
       ta.focus?.();
       ta.select?.();
     }
 
-    function commitInlineEditor() {
+    // Free text: the editor sits exactly over the text and grows right/down with it.
+    // Shape labels: the editor is centered on the shape.
+    function positionInlineEditor(el) {
+      if (typeof document === 'undefined') return;
+      const wrap = document.getElementById('inlineEditorWrap');
+      const ta = document.getElementById('inlineTextEditor');
+      if (!wrap || !ta) return;
+      if (isFreeText(el)) {
+        const scr = worldToScreen(el.x, el.y);
+        const fontPx = (Number(el.fontSize) || 16) * state.zoom;
+        wrap.style.left = `${scr.x}px`;
+        wrap.style.top = `${scr.y}px`;
+        ta.style.width = `${(el.width || 0) * state.zoom + fontPx}px`;
+        ta.style.height = `${(el.height || 0) * state.zoom}px`;
+        ta.style.padding = `${TEXT_PAD * state.zoom}px`;
+        return;
+      }
+      const scr = worldToScreen(el.x + (el.width || 0) / 2, el.y + (el.height || 0) / 2);
+      const w = Math.max(120, ((el.width || 120) - 12) * state.zoom);
+      const h = Math.max(36, ((el.height || 44) - 8) * state.zoom);
+      wrap.style.left = `${scr.x - w / 2}px`;
+      wrap.style.top = `${scr.y - h / 2}px`;
+      ta.style.width = `${w}px`;
+      ta.style.height = `${h}px`;
+      ta.style.padding = '';
+    }
+
+    // `textOverride` lets tests commit without a real textarea
+    function commitInlineEditor(textOverride) {
       if (!state.editingId) return;
       const el = state.elements.find(e => e.id === state.editingId);
       const wrap = typeof document !== 'undefined' ? document.getElementById('inlineEditorWrap') : null;
       const ta = typeof document !== 'undefined' ? document.getElementById('inlineTextEditor') : null;
-      if (el && ta) {
-        if (state.editingPreSnap && ta.value !== el.text) {
+      const text = typeof textOverride === 'string' ? textOverride : ta?.value;
+      if (el && typeof text === 'string') {
+        if (state.editingPreSnap && text !== el.text) {
           pushHistory(state.editingPreSnap);
         }
-        autoFitElementToText(el, ta.value);
+        autoFitElementToText(el, text);
+        // A free-text box left empty is discarded, and so is the undo step that created it
+        if (el.type === 'text' && text.trim() === '') {
+          state.elements = state.elements.filter(e => e.id !== el.id);
+          state.selectedIds.delete(el.id);
+          discardRedundantUndoSnapshot();
+          syncUIWithSelection();
+        }
       }
       state.editingId = null;
       state.editingPreSnap = null;
@@ -4476,6 +4795,16 @@
           }
           return;
         }
+        return;
+      }
+
+      // While a story plays, the keyboard is a presentation clicker; plain keys never reach the tools
+      if (state.storyPlayer.playing && !(e.metaKey || e.ctrlKey)) {
+        e.preventDefault?.();
+        if (STORY_NEXT_KEYS.has(e.key)) storyNext();
+        else if (STORY_PREV_KEYS.has(e.key)) goToStoryStep(state.storyPlayer.index - 1);
+        else if (e.key === 'Escape') stopStory();
+        else if (String(e.key).toLowerCase() === 'k') setTool(state.activeTool === 'laser' ? 'select' : 'laser');
         return;
       }
 
@@ -4603,6 +4932,12 @@
         return;
       }
 
+      if (key === 'p' && e.shiftKey) {
+        e.preventDefault?.();
+        startStory();
+        return;
+      }
+
       if (shortcutMap[key]) {
         e.preventDefault?.();
         setTool(shortcutMap[key]);
@@ -4616,7 +4951,12 @@
     const ALLOWED_FLOW_MODES = new Set(['comets', 'pulses', 'neon', 'dashed', 'aurora', 'none']);
 
     function getDiagramExportBounds(padding = 48) {
-      if (state.elements.length === 0) {
+      return getElementsBounds(state.elements, padding);
+    }
+
+    // World-space bounds of any subset of the scene (arrows resolve bindings against the full scene)
+    function getElementsBounds(elements, padding = 48) {
+      if (elements.length === 0) {
         return { x: 0, y: 0, width: 800, height: 500 };
       }
       let minX = Infinity;
@@ -4625,7 +4965,7 @@
       let maxY = -Infinity;
       const elementsMap = getElementMap();
 
-      for (const el of state.elements) {
+      for (const el of elements) {
         if (el.type === 'arrow') {
           const geom = getArrowGeometry(el, elementsMap);
           for (const pt of geom.samples) {
@@ -4791,7 +5131,8 @@
           zoom: { value: state.zoom },
           flowEnabled: state.flowEnabled,
           flowMode: state.flowMode,
-          flowSpeed: state.flowSpeed
+          flowSpeed: state.flowSpeed,
+          story: state.story
         }
       };
     }
@@ -4847,6 +5188,7 @@
         if (Number.isFinite(scrollX) && Number.isFinite(scrollY) && Number.isFinite(zoom) && zoom > 0) {
           appState.camera = { scrollX, scrollY, zoom: Math.max(0.25, Math.min(3.0, zoom)) };
         }
+        appState.story = sanitizeStory(raw.story);
         return { elements, appState };
       } catch (err) {
         return null;
@@ -4857,10 +5199,13 @@
     // (falling back to fit-to-screen); otherwise the view is always fitted.
     function applyScene(scene, { restoreCamera = false } = {}) {
       const app = scene.appState || {};
+      stopStory();
       state.elements = scene.elements;
       state.selectedIds.clear();
       state.activePulses = [];
       ShapeCache.clear();
+      state.story = app.story || { steps: [] };
+      syncStoryUI();
       if (app.viewBackgroundColor) setCanvasBackground(app.viewBackgroundColor);
       if (app.flowEnabled !== undefined) state.flowEnabled = app.flowEnabled;
       if (app.flowMode) state.flowMode = app.flowMode;
@@ -4972,21 +5317,31 @@
     }
 
     function fitToScreen() {
-      const bounds = getDiagramExportBounds(64);
+      const cam = computeFitCamera(getDiagramExportBounds(64));
+      state.zoom = cam.zoom;
+      state.scrollX = cam.scrollX;
+      state.scrollY = cam.scrollY;
+      syncZoomReadout();
+    }
+
+    // Camera that centers `bounds` in the free viewport. `presenting` ignores the side panels (they are
+    // hidden during story playback) and reserves room at the bottom for the caption bar.
+    function computeFitCamera(bounds, { presenting = false } = {}) {
       const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
       const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-      const sidebarOffset = ((typeof document !== 'undefined' &&
+      const sidebarOffset = presenting ? 0 : ((typeof document !== 'undefined' &&
         !document.getElementById('leftSidebar')?.classList.contains('collapsed')) ? 115 : 0) +
         (state.projectsPanelOpen ? 122 : 0);
+      const bottomReserve = presenting ? STORY_CAPTION_RESERVE : 0;
 
       const availW = Math.max(320, vw - sidebarOffset - 80);
-      const availH = Math.max(240, vh - 140);
-      const nextZoom = Math.max(0.25, Math.min(1.5, Math.min(availW / bounds.width, availH / bounds.height)));
-
-      state.zoom = nextZoom;
-      state.scrollX = (vw + sidebarOffset) / (2 * state.zoom) - (bounds.x + bounds.width / 2);
-      state.scrollY = vh / (2 * state.zoom) - (bounds.y + bounds.height / 2);
-      syncZoomReadout();
+      const availH = Math.max(240, vh - 140 - bottomReserve);
+      const zoom = Math.max(0.25, Math.min(1.5, Math.min(availW / bounds.width, availH / bounds.height)));
+      return {
+        zoom,
+        scrollX: (vw + sidebarOffset) / (2 * zoom) - (bounds.x + bounds.width / 2),
+        scrollY: (vh - bottomReserve) / (2 * zoom) - (bounds.y + bounds.height / 2)
+      };
     }
 
     function toggleSidebar() {
@@ -5210,6 +5565,9 @@
           screenX: e.clientX,
           screenY: e.clientY
         });
+        // This press opened the text editor (text tool): keep the browser from moving focus back
+        // to the canvas, which would blur and immediately commit the still-empty editor
+        if (state.editingId) e.preventDefault();
       });
 
       interactiveCanvas.addEventListener('pointermove', e => {
@@ -5273,16 +5631,7 @@
           const el = state.elements.find(e => e.id === state.editingId);
           if (el) {
             autoFitElementToText(el, ta.value);
-            const scr = worldToScreen(el.x + (el.width || 0) / 2, el.y + (el.height || 0) / 2);
-            const w = Math.max(120, (el.width || 120) * state.zoom);
-            const h = Math.max(36, (el.height || 44) * state.zoom);
-            const wrap = document.getElementById('inlineEditorWrap');
-            if (wrap) {
-              wrap.style.left = `${scr.x - w / 2}px`;
-              wrap.style.top = `${scr.y - h / 2}px`;
-            }
-            ta.style.width = `${w}px`;
-            ta.style.height = `${h}px`;
+            positionInlineEditor(el);
           }
         });
         ta.addEventListener('blur', () => commitInlineEditor());
@@ -5431,7 +5780,7 @@
       document.querySelectorAll('[data-template]').forEach(btn => {
         btn.addEventListener('click', () => {
           closeAllDropdowns();
-          loadTemplate(btn.getAttribute('data-template'));
+          openTemplate(btn.getAttribute('data-template'));
         });
       });
 
@@ -5493,6 +5842,40 @@
       document.getElementById('zoomResetBtn')?.addEventListener('click', () => setZoom(1.0));
       document.getElementById('zoomFitBtn')?.addEventListener('click', fitToScreen);
 
+      // Flow Stories: thin wrappers over section 18
+      document.getElementById('storyToggleBtn')?.addEventListener('click', () => toggleStoryPanel());
+      document.getElementById('storyAddBtn')?.addEventListener('click', () => {
+        const step = addStoryStepFromSelection();
+        if (step) showToast(step.focusIds.length ? `Step ${state.story.steps.length} spotlights ${step.focusIds.length} elements` : `Step ${state.story.steps.length} shows the whole diagram`);
+      });
+      document.getElementById('storyAutoBtn')?.addEventListener('click', () => {
+        if (state.story.steps.length > 0 && typeof confirm === 'function' && !confirm('Replace the current story steps with an auto-drafted story?')) return;
+        const steps = buildAutoStory();
+        showToast(`Drafted ${steps.length} steps from the flow order`);
+      });
+      document.getElementById('storyPlayBtn')?.addEventListener('click', () => startStory());
+      document.getElementById('storyRecordBtn')?.addEventListener('click', recordStoryVideo);
+      document.getElementById('storyPrevBtn')?.addEventListener('click', () => goToStoryStep(state.storyPlayer.index - 1));
+      document.getElementById('storyNextBtn')?.addEventListener('click', storyNext);
+      document.getElementById('storyExitBtn')?.addEventListener('click', stopStory);
+      const storyList = document.getElementById('storyStepList');
+      storyList?.addEventListener('click', e => {
+        const btn = e.target.closest?.('[data-story-action]');
+        const stepId = e.target.closest?.('[data-step-id]')?.getAttribute('data-step-id');
+        if (!btn || !stepId) return;
+        const action = btn.getAttribute('data-story-action');
+        if (action === 'delete') deleteStoryStep(stepId);
+        else if (action === 'play') startStory(state.story.steps.findIndex(s => s.id === stepId));
+      });
+      storyList?.addEventListener('change', e => {
+        const stepId = e.target.closest?.('[data-step-id]')?.getAttribute('data-step-id');
+        if (stepId && e.target.getAttribute('data-story-action') === 'caption') setStoryCaption(stepId, e.target.value);
+      });
+      storyList?.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === 'Escape') e.target.blur?.();
+      });
+      syncStoryUI();
+
       // Warm up official Excalidraw web fonts (Excalifont, Virgil, Cascadia, Assistant)
       if (document.fonts && document.fonts.load) {
         Promise.allSettled([
@@ -5530,6 +5913,8 @@
           }
         }
 
+        advanceStoryTween(timeSec);
+
         const dpr = window.devicePixelRatio || 1;
         const sCtx = staticCanvas.getContext('2d');
         const iCtx = interactiveCanvas.getContext('2d');
@@ -5541,7 +5926,7 @@
         sCtx.fillRect(0, 0, staticCanvas.width, staticCanvas.height);
         sCtx.scale(dpr * state.zoom, dpr * state.zoom);
         sCtx.translate(state.scrollX, state.scrollY);
-        const arrowGeoms = renderScenePasses(sCtx, timeSec, { canvasBg: frameBg });
+        const arrowGeoms = renderScenePasses(sCtx, timeSec, { canvasBg: frameBg, focusSet: getStoryFocusSet() });
         sCtx.restore();
 
         iCtx.save();
@@ -5740,7 +6125,7 @@
 
     // Everything that is persisted except the camera, so panning and zooming alone never trigger a save
     function sceneContentKey() {
-      return JSON.stringify([state.elements, state.canvasBg, state.flowEnabled, state.flowMode, state.flowSpeed]);
+      return JSON.stringify([state.elements, state.canvasBg, state.flowEnabled, state.flowMode, state.flowSpeed, state.story]);
     }
 
     function isCanvasDirty() {
@@ -5758,7 +6143,8 @@
           viewBackgroundColor: state.canvasBg,
           flowEnabled: state.flowEnabled,
           flowMode: state.flowMode,
-          flowSpeed: state.flowSpeed
+          flowSpeed: state.flowSpeed,
+          story: { steps: [] }
         }
       }, null, 2);
     }
@@ -5941,6 +6327,19 @@
         await flushSave();
       }
       return info.id;
+    }
+
+    // Templates never overwrite the open canvas: in a workspace they become a new canvas in the
+    // current project; only scratch mode (nothing on disk) loads them in place
+    async function openTemplate(templateName) {
+      const ws = state.workspace;
+      if (!ws.store || !ws.projectId) {
+        loadTemplate(templateName);
+        return null;
+      }
+      const id = await newCanvas(ws.projectId, templateName, { template: templateName });
+      if (id) showToast(`Opened template as new canvas "${id}"`);
+      return id;
     }
 
     async function flushSave({ overwrite = false } = {}) {
@@ -6304,6 +6703,421 @@
       document.getElementById('conflictBar')?.classList.toggle('show', ws.status === 'conflict');
     }
 
+    /* -------------------------------------------------------------------------
+     * 18. Flow Stories (step-by-step spotlight walkthroughs, presenter mode & story video)
+     * ------------------------------------------------------------------------- */
+    const STORY_MAX_STEPS = 100;
+    const STORY_MAX_CAPTION = 280;
+    const STORY_MAX_FOCUS = 500;
+    const STORY_VEIL_ALPHA = 0.8;
+    const STORY_TWEEN_SEC = 0.65;
+    const STORY_CAPTION_RESERVE = 96;
+    const STORY_VIDEO_STEP_SEC = 2.6;
+    const STORY_NEXT_KEYS = new Set(['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter']);
+    const STORY_PREV_KEYS = new Set(['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace']);
+
+    // Validates untrusted story JSON into { steps: [{ id, caption, focusIds }] }
+    function sanitizeStory(raw) {
+      const rawSteps = raw && typeof raw === 'object' && Array.isArray(raw.steps) ? raw.steps : [];
+      const steps = [];
+      const seen = new Set();
+      for (const s of rawSteps) {
+        if (steps.length >= STORY_MAX_STEPS) break;
+        if (!s || typeof s !== 'object') continue;
+        const id = typeof s.id === 'string' && /^[\w-]{1,64}$/.test(s.id) && !seen.has(s.id) ? s.id : nextId('step');
+        seen.add(id);
+        const caption = typeof s.caption === 'string' ? s.caption.trim().slice(0, STORY_MAX_CAPTION) : '';
+        const focusIds = Array.isArray(s.focusIds)
+          ? Array.from(new Set(s.focusIds.filter(f => typeof f === 'string' && f.length > 0 && f.length <= 128))).slice(0, STORY_MAX_FOCUS)
+          : [];
+        steps.push({ id, caption, focusIds });
+      }
+      return { steps };
+    }
+
+    // An arrow is lit when it is focused itself or when both of its bound ends are
+    function isStoryFocused(el, focusSet) {
+      if (focusSet.has(el.id)) return true;
+      if (el.type !== 'arrow') return false;
+      const a = el.startBinding?.elementId;
+      const b = el.endBinding?.elementId;
+      return Boolean(a && b && focusSet.has(a) && focusSet.has(b));
+    }
+
+    // Focused elements that still exist; an empty result means "overview" (whole diagram, nothing dimmed)
+    function storyStepElements(step) {
+      if (!step) return [];
+      const ids = new Set(step.focusIds);
+      return state.elements.filter(el => ids.has(el.id));
+    }
+
+    function getStoryFocusSet() {
+      const p = state.storyPlayer;
+      if (!p.playing) return null;
+      const els = storyStepElements(state.story.steps[p.index]);
+      return els.length > 0 ? new Set(els.map(el => el.id)) : null;
+    }
+
+    function storyLabel(el) {
+      return String(el?.text || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function addStoryStepFromSelection() {
+      if (state.story.steps.length >= STORY_MAX_STEPS) {
+        showToast(`A story can have up to ${STORY_MAX_STEPS} steps`);
+        return null;
+      }
+      const focusEls = state.elements.filter(el => state.selectedIds.has(el.id)).slice(0, STORY_MAX_FOCUS);
+      const firstLabel = focusEls.filter(isNodeElement).map(storyLabel).find(Boolean);
+      const caption = focusEls.length === 0
+        ? 'The big picture'
+        : (firstLabel || `Step ${state.story.steps.length + 1}`);
+      const step = { id: nextId('step'), caption: caption.slice(0, STORY_MAX_CAPTION), focusIds: focusEls.map(el => el.id) };
+      state.story.steps.push(step);
+      syncStoryUI();
+      return step;
+    }
+
+    // Drafts a story from the flow order: an overview, then one step per BFS depth layer
+    // (the layer's nodes plus the arrows that deliver into it)
+    function buildAutoStory() {
+      const arrows = state.elements.filter(el => el.type === 'arrow');
+      const connected = new Set();
+      for (const arr of arrows) {
+        if (arr.startBinding?.elementId) connected.add(arr.startBinding.elementId);
+        if (arr.endBinding?.elementId) connected.add(arr.endBinding.elementId);
+      }
+      const { nodeDepths } = computeGraphDepths();
+      const layers = new Map();
+      for (const el of state.elements) {
+        if (!isNodeElement(el) || !connected.has(el.id)) continue;
+        const d = nodeDepths.get(el.id) || 0;
+        if (!layers.has(d)) layers.set(d, []);
+        layers.get(d).push(el);
+      }
+
+      const steps = [{ id: nextId('step'), caption: 'The big picture', focusIds: [] }];
+      for (const d of Array.from(layers.keys()).sort((a, b) => a - b)) {
+        if (steps.length >= STORY_MAX_STEPS) break;
+        const layer = layers.get(d);
+        const layerIds = new Set(layer.map(el => el.id));
+        const incoming = arrows.filter(arr => layerIds.has(arr.endBinding?.elementId) && arr.startBinding?.elementId);
+        const labels = layer.map(storyLabel).filter(Boolean);
+        const caption = labels.length > 0 ? labels.join('  ·  ') : `Stage ${d + 1}`;
+        steps.push({
+          id: nextId('step'),
+          caption: caption.slice(0, STORY_MAX_CAPTION),
+          focusIds: [...layer.map(el => el.id), ...incoming.map(arr => arr.id)].slice(0, STORY_MAX_FOCUS)
+        });
+      }
+      state.story = { steps };
+      syncStoryUI();
+      return steps;
+    }
+
+    function deleteStoryStep(stepId) {
+      const idx = state.story.steps.findIndex(s => s.id === stepId);
+      if (idx < 0) return false;
+      state.story.steps.splice(idx, 1);
+      syncStoryUI();
+      return true;
+    }
+
+    function setStoryCaption(stepId, text) {
+      const step = state.story.steps.find(s => s.id === stepId);
+      if (!step) return false;
+      step.caption = String(text ?? '').trim().slice(0, STORY_MAX_CAPTION);
+      return true;
+    }
+
+    // Presenter mode. With no steps yet, one keystroke still gets a walkthrough by drafting it first.
+    function startStory(fromIndex = 0) {
+      if (state.storyPlayer.playing) {
+        goToStoryStep(fromIndex);
+        return true;
+      }
+      if (state.story.steps.length === 0) {
+        if (!state.elements.some(isNodeElement)) {
+          showToast('Draw a few connected shapes first, then play the story');
+          return false;
+        }
+        buildAutoStory();
+        showToast('Drafted a story from the flow order');
+      }
+      if (state.editingId) commitInlineEditor();
+      closeAllDropdowns();
+      const p = state.storyPlayer;
+      p.savedCamera = { scrollX: state.scrollX, scrollY: state.scrollY, zoom: state.zoom };
+      p.playing = true;
+      state.selectedIds.clear();
+      syncUIWithSelection();
+      goToStoryStep(fromIndex);
+      return true;
+    }
+
+    function stopStory() {
+      const p = state.storyPlayer;
+      if (!p.playing) return;
+      p.playing = false;
+      p.index = -1;
+      if (p.savedCamera) startCameraTween(p.savedCamera);
+      p.savedCamera = null;
+      syncStoryUI();
+    }
+
+    function goToStoryStep(i) {
+      const p = state.storyPlayer;
+      const steps = state.story.steps;
+      if (!p.playing || steps.length === 0) return;
+      p.index = Math.max(0, Math.min(steps.length - 1, i));
+      const step = steps[p.index];
+      const els = storyStepElements(step);
+      const bounds = getElementsBounds(els.length > 0 ? els : state.elements, 72);
+      startCameraTween(computeFitCamera(bounds, { presenting: true }));
+      triggerStoryPulses(step);
+      syncStoryUI();
+    }
+
+    // Advancing past the last step ends the presentation, like a slide deck
+    function storyNext() {
+      const p = state.storyPlayer;
+      if (p.index >= state.story.steps.length - 1) stopStory();
+      else goToStoryStep(p.index + 1);
+    }
+
+    // Focused nodes fire bursts down their outgoing arrows; an overview step fires from the flow's roots
+    function triggerStoryPulses(step) {
+      const els = storyStepElements(step);
+      let nodes = els.filter(isNodeElement);
+      if (els.length === 0) {
+        const { nodeDepths } = computeGraphDepths();
+        nodes = state.elements.filter(el => isNodeElement(el) && nodeDepths.get(el.id) === 0);
+      }
+      let spawned = 0;
+      for (const n of nodes) {
+        if (state.elements.some(el => el.type === 'arrow' && el.startBinding?.elementId === n.id)) {
+          spawned += triggerNodePulse(n.id);
+        }
+      }
+      return spawned;
+    }
+
+    function startCameraTween(to) {
+      state.storyPlayer.tween = {
+        from: { scrollX: state.scrollX, scrollY: state.scrollY, zoom: state.zoom },
+        to,
+        start: null,
+        duration: prefersReducedMotion() ? 0.001 : STORY_TWEEN_SEC
+      };
+    }
+
+    // Glides the world point under the viewport centre and zooms geometrically, so the move reads as one arc
+    function advanceStoryTween(timeSec) {
+      const tw = state.storyPlayer.tween;
+      if (!tw) return;
+      if (tw.start === null) tw.start = timeSec;
+      const t = Math.max(0, Math.min(1, (timeSec - tw.start) / tw.duration));
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const ax = (typeof window !== 'undefined' ? window.innerWidth : 1280) / 2;
+      const ay = (typeof window !== 'undefined' ? window.innerHeight : 800) / 2;
+      const { from, to } = tw;
+      const zoom = from.zoom * Math.pow(to.zoom / from.zoom, e);
+      const wx = (ax / from.zoom - from.scrollX) + ((ax / to.zoom - to.scrollX) - (ax / from.zoom - from.scrollX)) * e;
+      const wy = (ay / from.zoom - from.scrollY) + ((ay / to.zoom - to.scrollY) - (ay / from.zoom - from.scrollY)) * e;
+      state.zoom = zoom;
+      state.scrollX = ax / zoom - wx;
+      state.scrollY = ay / zoom - wy;
+      if (t >= 1) {
+        state.zoom = to.zoom;
+        state.scrollX = to.scrollX;
+        state.scrollY = to.scrollY;
+        state.storyPlayer.tween = null;
+      }
+      syncZoomReadout();
+    }
+
+    function prefersReducedMotion() {
+      return typeof matchMedia === 'function' && Boolean(matchMedia('(prefers-reduced-motion: reduce)')?.matches);
+    }
+
+    function toggleStoryPanel(open = !state.storyPanelOpen) {
+      state.storyPanelOpen = Boolean(open);
+      syncStoryUI();
+    }
+
+    function syncStoryUI() {
+      if (typeof document === 'undefined') return;
+      const p = state.storyPlayer;
+      const steps = state.story.steps;
+      document.body.classList.toggle('story-playing', p.playing);
+      document.body.classList.toggle('story-strip-open', state.storyPanelOpen && !p.playing);
+      document.getElementById('storyToggleBtn')?.classList.toggle('active', state.storyPanelOpen);
+
+      const list = document.getElementById('storyStepList');
+      if (list) {
+        list.innerHTML = steps.length === 0
+          ? '<div class="story-empty">Select shapes and press <b>+ Step</b>, or let <b>Auto</b> draft a story from the flow.</div>'
+          : steps.map((s, i) => {
+            const count = storyStepElements(s).length;
+            return `<div class="story-chip" data-step-id="${escapeHtml(s.id)}">` +
+              `<button class="story-chip-num" data-story-action="play" title="Present from this step">${i + 1}</button>` +
+              `<input class="story-chip-caption" data-story-action="caption" maxlength="${STORY_MAX_CAPTION}" placeholder="Caption…" value="${escapeHtml(s.caption)}" />` +
+              `<span class="story-chip-meta" title="${count ? `${count} spotlighted elements` : 'Overview: whole diagram'}">${count || '◎'}</span>` +
+              `<button class="story-chip-del" data-story-action="delete" title="Remove step">×</button>` +
+              '</div>';
+          }).join('');
+      }
+
+      document.getElementById('storyCaption')?.classList.toggle('show', p.playing);
+      if (p.playing) {
+        const step = steps[p.index];
+        const textEl = document.getElementById('storyCaptionText');
+        if (textEl) {
+          textEl.textContent = step?.caption || '';
+          textEl.classList.remove('enter');
+          void textEl.offsetWidth; // restart the caption entrance animation
+          textEl.classList.add('enter');
+        }
+        const counter = document.getElementById('storyCounter');
+        if (counter) counter.textContent = `${p.index + 1} / ${steps.length}`;
+      }
+    }
+
+    function drawStoryCaptionOnCanvas(ctx, W, H, caption, counterText, bg) {
+      const dark = isDarkBackground(bg);
+      const fontPx = 46;
+      ctx.save();
+      ctx.font = `${fontPx}px ${FONT_MAP.hand}`;
+      let text = caption || '';
+      const maxW = W - 360;
+      while (text.length > 1 && ctx.measureText(text).width > maxW) text = `${text.slice(0, -2)}…`;
+      const textW = text ? ctx.measureText(text).width : 0;
+      const boxW = Math.max(220, textW + 200);
+      const boxH = 88;
+      const x = (W - boxW) / 2;
+      const y = H - boxH - 36;
+      ctx.globalAlpha = 0.94;
+      ctx.fillStyle = dark ? '#1c1c22' : '#ffffff';
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.12)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, 20);
+      else ctx.rect(x, y, boxW, boxH);
+      ctx.fill();
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = dark ? '#a5a2ff' : '#6965db';
+      ctx.font = `600 22px ${FONT_MAP.sans}`;
+      ctx.textAlign = 'left';
+      ctx.fillText(counterText, x + 28, y + boxH / 2);
+      ctx.fillStyle = dark ? '#f1f5f9' : '#1b1b1f';
+      ctx.font = `${fontPx}px ${FONT_MAP.hand}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(text, W / 2 + 30, y + boxH / 2 + 2);
+      ctx.restore();
+    }
+
+    // 1080p WebM of the whole story: the camera glides from the overview into each step, unfocused
+    // elements sit under the veil, bursts fire at every step boundary and the caption is burned in
+    function recordStoryVideo() {
+      closeAllDropdowns();
+      if (state.isRecording) {
+        showToast('Recording already in progress...');
+        return;
+      }
+      if (typeof MediaRecorder === 'undefined') {
+        showToast('MediaRecorder is not supported in this browser');
+        return;
+      }
+      if (state.story.steps.length === 0) {
+        if (!state.elements.some(isNodeElement)) {
+          showToast('Draw a few connected shapes first, then record the story');
+          return;
+        }
+        buildAutoStory();
+      }
+      state.isRecording = true;
+
+      const W = 1920;
+      const H = 1080;
+      const reserve = 150;
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = W;
+      offCanvas.height = H;
+      const ctx = offCanvas.getContext('2d');
+      const steps = state.story.steps.slice();
+
+      const viewFor = els => {
+        const b = getElementsBounds(els.length > 0 ? els : state.elements, 72);
+        const zoom = Math.max(0.2, Math.min(2.4, Math.min((W - 160) / b.width, (H - reserve - 80) / b.height)));
+        return { cx: b.x + b.width / 2, cy: b.y + b.height / 2, zoom };
+      };
+      const overview = viewFor([]);
+      const views = steps.map(s => viewFor(storyStepElements(s)));
+      const focusSets = steps.map(s => {
+        const els = storyStepElements(s);
+        return els.length > 0 ? new Set(els.map(el => el.id)) : null;
+      });
+
+      const stream = offCanvas.captureStream(60);
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 10_000_000 });
+      const chunks = [];
+      recorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+      recorder.onerror = () => {
+        state.isRecording = false;
+      };
+      recorder.onstop = () => {
+        state.isRecording = false;
+        downloadBlob(new Blob(chunks, { type: 'video/webm' }), 'excaliflow-story.webm');
+        showToast('Exported story video (excaliflow-story.webm)');
+      };
+
+      const fps = 60;
+      const stepFrames = Math.round(STORY_VIDEO_STEP_SEC * fps);
+      const glideFrames = Math.round(STORY_TWEEN_SEC * fps);
+      const totalFrames = steps.length * stepFrames + Math.round(0.5 * fps);
+      showToast(`Recording ${steps.length}-step story (${Math.round(totalFrames / fps)}s)...`);
+      recorder.start();
+
+      let frame = 0;
+      const baseTime = performance.now() / 1000;
+      const interval = setInterval(() => {
+        const si = Math.min(steps.length - 1, Math.floor(frame / stepFrames));
+        const local = frame - si * stepFrames;
+        if (local === 0) triggerStoryPulses(steps[si]);
+
+        const from = si === 0 ? overview : views[si - 1];
+        const to = views[si];
+        const t = Math.min(1, local / glideFrames);
+        const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        const zoom = from.zoom * Math.pow(to.zoom / from.zoom, e);
+        const cx = from.cx + (to.cx - from.cx) * e;
+        const cy = from.cy + (to.cy - from.cy) * e;
+
+        const bg = getEffectiveCanvasBg();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        ctx.save();
+        ctx.translate(W / 2, (H - reserve) / 2 + 20);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-cx, -cy);
+        renderScenePasses(ctx, baseTime + frame / fps, { canvasBg: bg, forExport: true, focusSet: focusSets[si] });
+        ctx.restore();
+        drawStoryCaptionOnCanvas(ctx, W, H, steps[si].caption, `${si + 1} / ${steps.length}`, bg);
+
+        frame++;
+        if (frame >= totalFrames) {
+          clearInterval(interval);
+          recorder.stop();
+        }
+      }, 1000 / fps);
+    }
+
     if (typeof window !== 'undefined') {
       Object.assign(window, {
         state,
@@ -6360,11 +7174,26 @@
         connectWorkspace,
         openCanvas,
         newCanvas,
+        openTemplate,
+        commitInlineEditor,
         flushSave,
         resolveConflict,
         sceneContentKey,
         isCanvasDirty,
-        pushHistory
+        pushHistory,
+        sanitizeStory,
+        addStoryStepFromSelection,
+        buildAutoStory,
+        deleteStoryStep,
+        setStoryCaption,
+        startStory,
+        stopStory,
+        goToStoryStep,
+        storyNext,
+        getStoryFocusSet,
+        advanceStoryTween,
+        getElementsBounds,
+        computeFitCamera
       });
       window.addEventListener('DOMContentLoaded', initStudioDOM);
     }
