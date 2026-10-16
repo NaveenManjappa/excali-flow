@@ -371,6 +371,40 @@
       display: flex;
     }
 
+    .menu-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 4px 6px 2px;
+    }
+
+    #canvasBgSwatches {
+      padding: 4px 6px 6px;
+      gap: 6px;
+    }
+
+    .bg-chip {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid var(--panel-border);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Dark theme previews the presets through the same filter the canvas uses (like Excalidraw) */
+    body.dark-theme #canvasBgSwatches .color-swatch {
+      filter: invert(93%) hue-rotate(180deg);
+    }
+
+    .bg-custom-row input[type="color"] {
+      width: 26px;
+      height: 20px;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
     .menu-item {
       width: 100%;
       justify-content: space-between;
@@ -927,7 +961,7 @@
       <div class="v-divider"></div>
       <button class="dock-tool-btn active" data-tool="select" title="Selection — Move, resize, bend arrows (V or 1)">
         <svg viewBox="0 0 24 24"><path d="M4 4l7.07 17 2.51-7.39L21 11.07z"/></svg>
-        <span class="dock-key">1</span>
+        <span class="dock-key">V</span>
       </button>
       <button class="dock-tool-btn" data-tool="hand" title="Hand — Pan canvas (H or Space)">
         <svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0v4"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
@@ -935,31 +969,31 @@
       </button>
       <button class="dock-tool-btn" data-tool="rectangle" title="Rectangle (R or 2)">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/></svg>
-        <span class="dock-key">2</span>
+        <span class="dock-key">R</span>
       </button>
       <button class="dock-tool-btn" data-tool="diamond" title="Diamond / Decision (D or 3)">
         <svg viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z"/></svg>
-        <span class="dock-key">3</span>
+        <span class="dock-key">D</span>
       </button>
       <button class="dock-tool-btn" data-tool="ellipse" title="Ellipse / Circle (O or 4)">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>
-        <span class="dock-key">4</span>
+        <span class="dock-key">O</span>
       </button>
       <button class="dock-tool-btn" data-tool="arrow" title="Causal Flow Arrow (A or 5)">
         <svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9 5 19 5 19 15"/></svg>
-        <span class="dock-key">5</span>
+        <span class="dock-key">A</span>
       </button>
       <button class="dock-tool-btn" data-tool="freedraw" title="Draw Freehand (P or 7)">
         <svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-        <span class="dock-key">7</span>
+        <span class="dock-key">P</span>
       </button>
       <button class="dock-tool-btn" data-tool="text" title="Text (T or 8)">
         <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-        <span class="dock-key">8</span>
+        <span class="dock-key">T</span>
       </button>
       <button class="dock-tool-btn" data-tool="sticky" title="Sticky Note (N or 9)">
         <svg viewBox="0 0 24 24"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><polyline points="14 3 14 9 21 9"/></svg>
-        <span class="dock-key">9</span>
+        <span class="dock-key">N</span>
       </button>
       <button class="dock-tool-btn" data-tool="laser" title="Laser Pointer (K)">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M19.07 4.93l-2.12 2.12M7.05 16.95l-2.12 2.12"/></svg>
@@ -967,7 +1001,7 @@
       </button>
       <button class="dock-tool-btn" data-tool="eraser" title="Eraser (E or 0)">
         <svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-        <span class="dock-key">0</span>
+        <span class="dock-key">E</span>
       </button>
     </nav>
 
@@ -979,8 +1013,26 @@
         <span id="flowBadgeText" class="flow-badge-meta">COMETS · 1X</span>
       </div>
       <div class="v-divider"></div>
-      <button id="bgWhiteBtn" class="ui-btn active" title="Pure White Canvas (#ffffff)">☀</button>
-      <button id="bgBlackBtn" class="ui-btn" title="Pitch-Black Neon Canvas (#000000)">☾</button>
+      <button id="themeToggleBtn" class="ui-btn" title="Dark mode (Alt+Shift+D)">☾</button>
+      <div class="dropdown-wrap">
+        <button id="canvasBgBtn" class="ui-btn" title="Canvas background">
+          <span id="canvasBgChip" class="bg-chip" style="background:#ffffff"></span>
+        </button>
+        <div id="canvasBgDropdown" class="dropdown-menu glass-panel">
+          <div class="menu-label">Canvas background</div>
+          <div class="swatch-row" id="canvasBgSwatches">
+            <button class="color-swatch active" data-canvas-bg="#ffffff" title="White (#ffffff)" style="background:#ffffff"></button>
+            <button class="color-swatch" data-canvas-bg="#f8f9fa" title="Light gray (#f8f9fa)" style="background:#f8f9fa"></button>
+            <button class="color-swatch" data-canvas-bg="#f5faff" title="Ice blue (#f5faff)" style="background:#f5faff"></button>
+            <button class="color-swatch" data-canvas-bg="#fffce8" title="Cream (#fffce8)" style="background:#fffce8"></button>
+            <button class="color-swatch" data-canvas-bg="#fdf8f6" title="Blush (#fdf8f6)" style="background:#fdf8f6"></button>
+          </div>
+          <label class="ui-btn menu-item bg-custom-row" title="Pick any color">
+            <span>Custom…</span>
+            <input type="color" id="canvasBgCustom" value="#ffffff" />
+          </label>
+        </div>
+      </div>
       <div class="v-divider"></div>
       <button id="btnSavePng" class="ui-btn primary" title="Export Cropped 2x Retina PNG">Export PNG</button>
       <div class="dropdown-wrap">
@@ -1038,10 +1090,10 @@
     <div class="sidebar-section">
       <div class="section-title"><span>Fill</span></div>
       <div class="segmented-row" id="fillStyleRow">
-        <button class="seg-btn active" data-fill-style="hachure" title="Hachure Sketch Fill">Sketch</button>
+        <button class="seg-btn" data-fill-style="hachure" title="Hachure Sketch Fill">Sketch</button>
         <button class="seg-btn" data-fill-style="cross-hatch" title="Cross-Hatch Fill">Cross</button>
         <button class="seg-btn" data-fill-style="solid" title="Solid Tint Fill">Solid</button>
-        <button class="seg-btn" data-fill-style="none" title="Outline Only">None</button>
+        <button class="seg-btn active" data-fill-style="none" title="Outline Only">None</button>
       </div>
     </div>
 
@@ -1069,9 +1121,9 @@
         <button class="seg-btn" data-roughness="1.75">Cartoon</button>
       </div>
       <div class="segmented-row" id="curveTypeRow">
-        <button class="seg-btn active" data-curve-type="curved">Curved</button>
+        <button class="seg-btn active" data-curve-type="straight">Straight</button>
+        <button class="seg-btn" data-curve-type="curved">Curved</button>
         <button class="seg-btn" data-curve-type="elbow">Elbow</button>
-        <button class="seg-btn" data-curve-type="straight">Straight</button>
       </div>
     </div>
 
@@ -1099,6 +1151,8 @@
         <button class="seg-btn" data-flow-mode="pulses">◎ Pulses</button>
         <button class="seg-btn" data-flow-mode="neon">⚡ Neon</button>
         <button class="seg-btn" data-flow-mode="dashed">⋯ Stream</button>
+        <button class="seg-btn" data-flow-mode="aurora" title="Warm-to-cool glowing trail — great for tutorials">✦ Aurora</button>
+        <button class="seg-btn" data-flow-mode="none" title="No ambient animation (pulse bursts still play)">⊘ None</button>
       </div>
       <div class="segmented-row" id="flowSpeedRow">
         <button class="seg-btn" data-flow-speed="0.6">0.6x</button>
@@ -1232,16 +1286,50 @@
       return SEMANTIC_COLORS.find(c => c.hex.toLowerCase() === norm) || SEMANTIC_COLORS[0];
     }
 
+    const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
+
+    // Relative luminance (WCAG) below 0.4 counts as a dark canvas: strokes switch to their light variants
+    function isDarkBackground(hex) {
+      const color = String(hex || '');
+      if (!HEX_COLOR_RE.test(color)) return false;
+      const channel = i => {
+        const c = parseInt(color.slice(i, i + 2), 16) / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      };
+      const lum = 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+      return lum < 0.4;
+    }
+
+    // Excalidraw's dark theme: CSS `invert(93%) hue-rotate(180deg)` applied to the canvas background
+    function applyDarkThemeFilter(hex) {
+      const color = HEX_COLOR_RE.test(String(hex || '')) ? hex : '#ffffff';
+      const inv = i => {
+        const c = parseInt(color.slice(i, i + 2), 16);
+        return 0.93 * (255 - c) + 0.07 * c;
+      };
+      const r = inv(1), g = inv(3), b = inv(5);
+      const out = [
+        -0.574 * r + 1.43 * g + 0.144 * b,
+        0.426 * r + 0.43 * g + 0.144 * b,
+        0.426 * r + 1.43 * g - 0.856 * b
+      ];
+      return '#' + out.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+    }
+
+    function getEffectiveCanvasBg() {
+      return state.theme === 'dark' ? applyDarkThemeFilter(state.canvasBg) : state.canvasBg;
+    }
+
     function resolveStrokeColor(hex, canvasBg) {
       const entry = getColorEntry(hex);
-      const isDark = (canvasBg || state.canvasBg) === '#000000';
+      const isDark = isDarkBackground(canvasBg || getEffectiveCanvasBg());
       if (isDark) return entry.darkStroke || entry.hex;
       return entry.hex;
     }
 
     function resolveFillTint(hex, canvasBg, isSticky = false) {
       const entry = getColorEntry(hex);
-      const isDark = (canvasBg || state.canvasBg) === '#000000';
+      const isDark = isDarkBackground(canvasBg || getEffectiveCanvasBg());
       if (isSticky) {
         if (entry.hex === '#171717') return isDark ? 'rgba(251, 191, 36, 0.20)' : '#fef3c7';
       }
@@ -1283,6 +1371,8 @@
       activeTool: 'select',
       toolLocked: false,
       canvasBg: '#ffffff',
+      // UI theme is a per-user preference (localStorage), not scene content; dark renders canvasBg through a filter
+      theme: 'light',
       scrollX: 0,
       scrollY: 0,
       zoom: 1,
@@ -1294,13 +1384,13 @@
       nodeArrivalEnergy: new Map(),
       defaults: {
         strokeColor: '#171717',
-        fillStyle: 'hachure',
+        fillStyle: 'none',
         fontFamily: 'hand',
         fontSize: 15,
         roughness: 0.85,
         strokeWidth: 2.2,
         strokeStyle: 'solid',
-        curveType: 'curved'
+        curveType: 'straight'
       },
       history: {
         undoStack: [],
@@ -2335,7 +2425,7 @@
 
     function drawStaticElement(ctx, el, opts = {}) {
       if (!el || el.type === 'arrow') return;
-      const canvasBg = opts.canvasBg || state.canvasBg;
+      const canvasBg = opts.canvasBg || getEffectiveCanvasBg();
       const strokeColor = resolveStrokeColor(el.strokeColor, canvasBg);
       const fillTint = resolveFillTint(el.strokeColor, canvasBg, el.type === 'sticky');
       const sw = Number(el.strokeWidth) || 2.2;
@@ -2404,7 +2494,7 @@
         ctx.save();
         ctx.clip(paths.fillPath);
         ctx.strokeStyle = strokeColor;
-        ctx.globalAlpha = canvasBg === '#000000' ? 0.44 : 0.36;
+        ctx.globalAlpha = isDarkBackground(canvasBg) ? 0.44 : 0.36;
         // Excalidraw shape.ts: fillWeight = element.strokeWidth / 2
         ctx.lineWidth = Math.max(1.0, sw * 0.5);
         ctx.setLineDash([]);
@@ -2422,7 +2512,7 @@
     }
 
     function drawArrowAndParticles(ctx, el, geom, depth, timeSec, opts = {}) {
-      const canvasBg = opts.canvasBg || state.canvasBg;
+      const canvasBg = opts.canvasBg || getEffectiveCanvasBg();
       const isSplitTarget = state.splitTargetArrowId === el.id;
       const strokeColor = isSplitTarget ? '#10b981' : resolveStrokeColor(el.strokeColor, canvasBg);
       const baseSw = Number(el.strokeWidth) || 2.2;
@@ -2555,7 +2645,7 @@
       }
 
       const arrowFlowActive = state.flowEnabled && (el.flowEnabled !== false);
-      if (arrowFlowActive && geom.totalLen > 24) {
+      if (arrowFlowActive && state.flowMode !== 'none' && geom.totalLen > 24) {
         const packetCount = Math.max(1, Math.min(4, Math.round(geom.totalLen / 150)));
         const speed = (Number(state.flowSpeed) || 1.0) * 0.55;
         const hopOffset = -(Number(depth) || 0) * 0.38;
@@ -2572,7 +2662,7 @@
           }
 
           const dist = phase * geom.totalLen;
-          drawFlowParticleAt(ctx, geom, dist, phase, strokeColor, sw, mode, canvasBg);
+          drawFlowParticleAt(ctx, geom, dist, phase, strokeColor, sw, mode, canvasBg, false, k % 2 === 1);
         }
       }
 
@@ -2591,9 +2681,19 @@
       ctx.restore();
     }
 
-    function drawFlowParticleAt(ctx, geom, dist, phase, color, sw, mode, canvasBg, isBurst = false) {
+    // Aurora palettes: deeper hues keep contrast on light canvases, brighter ones glow on dark canvases
+    const AURORA_LIGHT = { warm: '#f76707', cool: '#7048e8' };
+    const AURORA_DARK = { warm: '#ffa94d', cool: '#66d9e8' };
+
+    function lerpHex(a, b, t) {
+      const ch = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
+      const mix = i => Math.round(ch(a, i) + (ch(b, i) - ch(a, i)) * t).toString(16).padStart(2, '0');
+      return `#${mix(1)}${mix(3)}${mix(5)}`;
+    }
+
+    function drawFlowParticleAt(ctx, geom, dist, phase, color, sw, mode, canvasBg, isBurst = false, flipPalette = false) {
       const pt = pointAtArcLength(geom, dist);
-      const isDark = canvasBg === '#000000';
+      const isDark = isDarkBackground(canvasBg);
       const coreColor = isDark || isBurst ? '#ffffff' : color;
 
       ctx.save();
@@ -2663,6 +2763,57 @@
         ctx.moveTo(pBack.x, pBack.y);
         ctx.lineTo(pt.x, pt.y);
         ctx.stroke();
+      } else if (mode === 'aurora') {
+        const palette = isDark ? AURORA_DARK : AURORA_LIGHT;
+        const head = flipPalette ? palette.cool : palette.warm;
+        const tail = flipPalette ? palette.warm : palette.cool;
+        if (isDark) ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+
+        const tailLen = Math.min(56, geom.totalLen * 0.3);
+        const segs = 14;
+        for (let s = 0; s < segs; s++) {
+          const d0 = Math.max(0, dist - (s / segs) * tailLen);
+          const d1 = Math.max(0, dist - ((s + 1) / segs) * tailLen);
+          if (d0 <= d1) continue;
+          const pA = pointAtArcLength(geom, d0);
+          const pB = pointAtArcLength(geom, d1);
+          const frac = 1 - s / segs;
+          ctx.beginPath();
+          ctx.strokeStyle = lerpHex(head, tail, s / (segs - 1));
+          ctx.globalAlpha = frac * (isDark ? 0.8 : 0.7);
+          ctx.lineWidth = Math.max(1.2, sw * 2.2 * frac);
+          ctx.moveTo(pA.x, pA.y);
+          ctx.lineTo(pB.x, pB.y);
+          ctx.stroke();
+        }
+
+        const haloR = Math.max(8, sw * 4);
+        if (typeof ctx.createRadialGradient === 'function') {
+          const halo = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, haloR);
+          halo.addColorStop(0, head);
+          halo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.beginPath();
+          ctx.globalAlpha = isDark ? 0.55 : 0.25;
+          ctx.fillStyle = halo;
+          ctx.arc(pt.x, pt.y, haloR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = head;
+        ctx.shadowBlur = isDark ? 16 : 6;
+        ctx.fillStyle = head;
+        ctx.arc(pt.x, pt.y, Math.max(2.8, sw * 1.35), 0, Math.PI * 2);
+        ctx.fill();
+        if (isDark) {
+          ctx.beginPath();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#fff4e6';
+          ctx.arc(pt.x, pt.y, Math.max(1.2, sw * 0.55), 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
       ctx.restore();
     }
@@ -2672,7 +2823,7 @@
       if (!el || el.type === 'arrow' || !el.text || String(el.text).trim().length === 0) return;
       if (state.editingId === el.id && !opts.forExport) return;
 
-      const canvasBg = opts.canvasBg || state.canvasBg;
+      const canvasBg = opts.canvasBg || getEffectiveCanvasBg();
       const strokeColor = resolveStrokeColor(el.strokeColor, canvasBg);
       const fontSize = Number(el.fontSize) || 16;
       const lineHeight = Math.round(fontSize * EXCALIDRAW_LINE_HEIGHT);
@@ -3296,7 +3447,7 @@
 
     function drawInteractiveOverlay(ctx, arrowGeoms) {
       const zoom = state.zoom || 1;
-      const isDark = state.canvasBg === '#000000';
+      const isDark = isDarkBackground(getEffectiveCanvasBg());
       const accent = isDark ? '#8b87ff' : '#6965db';
 
       ctx.save();
@@ -3803,9 +3954,8 @@
             state.selectedIds.clear();
             state.selectedIds.add(hitEl.id);
             syncUIWithSelection();
-            if (!isStraight) {
-              state.drag = { mode: 'arrow-handle', arrow: hitEl, handle: 'curve' };
-            }
+            // Like Excalidraw's midpoint drag: pulling a straight arrow's shaft bends it into a curve
+            state.drag = { mode: 'arrow-handle', arrow: hitEl, handle: 'curve', promoteFromStraight: isStraight };
             updateInteractiveCursor();
             return;
           }
@@ -3992,6 +4142,10 @@
             arrow.y2 = endPt.y;
           }
         } else if (d.handle === 'curve') {
+          if (d.promoteFromStraight && arrow.curveType === 'straight') {
+            arrow.curveType = 'curved';
+            d.promoteFromStraight = false;
+          }
           const geom = getArrowGeometry(arrow);
           const { p0, p1 } = geom;
           const mx = (p0.x + p1.x) / 2;
@@ -4265,7 +4419,7 @@
       ta.style.height = `${h}px`;
       ta.style.fontFamily = FONT_MAP[normalizeFontFamily(el.fontFamily)];
       ta.style.fontSize = `${fontSize}px`;
-      ta.style.color = resolveStrokeColor(el.strokeColor, state.canvasBg);
+      ta.style.color = resolveStrokeColor(el.strokeColor, getEffectiveCanvasBg());
       ta.value = el.text || '';
       ta.focus?.();
       ta.select?.();
@@ -4437,6 +4591,12 @@
         'e': 'eraser'
       };
 
+      if (e.altKey && e.shiftKey && (e.code === 'KeyD' || key === 'd')) {
+        e.preventDefault?.();
+        toggleTheme();
+        return;
+      }
+
       if (key === 'q') {
         e.preventDefault?.();
         toggleToolLock();
@@ -4453,7 +4613,7 @@
      * 14. Studio Exports (2x Retina PNG, Clipboard, 60fps WebM Video, JSON)
      * ------------------------------------------------------------------------- */
     const ALLOWED_ELEMENT_TYPES = new Set(['rectangle', 'ellipse', 'diamond', 'arrow', 'line', 'freedraw', 'text', 'sticky']);
-    const ALLOWED_FLOW_MODES = new Set(['comets', 'pulses', 'neon', 'dashed']);
+    const ALLOWED_FLOW_MODES = new Set(['comets', 'pulses', 'neon', 'dashed', 'aurora', 'none']);
 
     function getDiagramExportBounds(padding = 48) {
       if (state.elements.length === 0) {
@@ -4499,11 +4659,12 @@
 
     function renderSceneToExportCtx(offCtx, offCanvas, bounds, scale, timeSec) {
       offCtx.save();
-      offCtx.fillStyle = state.canvasBg;
+      const exportBg = getEffectiveCanvasBg();
+      offCtx.fillStyle = exportBg;
       offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
       offCtx.scale(scale, scale);
       offCtx.translate(-bounds.x, -bounds.y);
-      renderScenePasses(offCtx, timeSec, { canvasBg: state.canvasBg, forExport: true });
+      renderScenePasses(offCtx, timeSec, { canvasBg: exportBg, forExport: true });
       offCtx.restore();
     }
 
@@ -4673,7 +4834,7 @@
 
         const appState = {};
         const raw = data.appState && typeof data.appState === 'object' ? data.appState : {};
-        if (typeof raw.viewBackgroundColor === 'string') appState.viewBackgroundColor = raw.viewBackgroundColor;
+        if (typeof raw.viewBackgroundColor === 'string' && HEX_COLOR_RE.test(raw.viewBackgroundColor)) appState.viewBackgroundColor = raw.viewBackgroundColor.toLowerCase();
         if (typeof raw.flowEnabled === 'boolean') appState.flowEnabled = raw.flowEnabled;
         if (typeof raw.flowMode === 'string' && ALLOWED_FLOW_MODES.has(raw.flowMode)) appState.flowMode = raw.flowMode;
         if (raw.flowSpeed !== undefined) {
@@ -4738,11 +4899,54 @@
     }
 
     function setCanvasBackground(color) {
-      state.canvasBg = color === '#000000' ? '#000000' : '#ffffff';
+      const c = String(color || '').toLowerCase();
+      state.canvasBg = HEX_COLOR_RE.test(c) ? c : '#ffffff';
+      syncCanvasTheme();
+    }
+
+    function setTheme(theme, { persist = true } = {}) {
+      state.theme = theme === 'dark' ? 'dark' : 'light';
+      if (persist) {
+        try {
+          localStorage.setItem(THEME_KEY, state.theme);
+        } catch (err) { /* storage unavailable: preference just isn't remembered */ }
+      }
+      syncCanvasTheme();
+      return state.theme;
+    }
+
+    function toggleTheme() {
+      return setTheme(state.theme === 'dark' ? 'light' : 'dark');
+    }
+
+    function readThemePref() {
+      try {
+        const raw = localStorage.getItem(THEME_KEY);
+        return raw === 'dark' || raw === 'light' ? raw : null;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function syncCanvasTheme() {
       if (typeof document === 'undefined') return;
-      document.body.classList.toggle('dark-canvas', state.canvasBg === '#000000');
-      document.getElementById('bgWhiteBtn')?.classList.toggle('active', state.canvasBg === '#ffffff');
-      document.getElementById('bgBlackBtn')?.classList.toggle('active', state.canvasBg === '#000000');
+      const effective = getEffectiveCanvasBg();
+      document.body?.classList?.toggle('dark-canvas', isDarkBackground(effective));
+      document.body?.classList?.toggle('dark-theme', state.theme === 'dark');
+      document.documentElement?.style?.setProperty?.('--bg-canvas', effective);
+      document.body?.style?.setProperty?.('--bg-canvas', effective);
+      document.querySelectorAll('#canvasBgSwatches [data-canvas-bg]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-canvas-bg') === state.canvasBg);
+      });
+      const chip = document.getElementById('canvasBgChip');
+      if (chip?.style) chip.style.background = effective;
+      const custom = document.getElementById('canvasBgCustom');
+      if (custom) custom.value = state.canvasBg;
+      const themeBtn = document.getElementById('themeToggleBtn');
+      if (themeBtn) {
+        themeBtn.textContent = state.theme === 'dark' ? '☀' : '☾';
+        themeBtn.title = state.theme === 'dark' ? 'Light mode (Alt+Shift+D)' : 'Dark mode (Alt+Shift+D)';
+      }
     }
 
     function syncZoomReadout() {
@@ -4833,7 +5037,7 @@
         mBtn.classList.toggle('active', state.flowEnabled);
       }
       if (badge) {
-        badge.textContent = `${state.flowMode.toUpperCase()} · ${state.flowSpeed}X`;
+        badge.textContent = state.flowMode === 'none' ? 'NONE' : `${state.flowMode.toUpperCase()} · ${state.flowSpeed}X`;
       }
     }
 
@@ -5085,6 +5289,9 @@
       }
 
       window.addEventListener('keydown', e => {
+        // Typing into form fields (custom color, rename prompts) must not trigger tool shortcuts
+        const t = e.target;
+        if (t && t !== ta && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
         if (e.code === 'Space' && !state.editingId) {
           state.isSpacePanning = true;
           updateInteractiveCursor();
@@ -5147,8 +5354,20 @@
       document.getElementById('conflictCopyBtn')?.addEventListener('click', () => resolveConflict('copy'));
       document.getElementById('btnUndo')?.addEventListener('click', undo);
       document.getElementById('btnRedo')?.addEventListener('click', redo);
-      document.getElementById('bgWhiteBtn')?.addEventListener('click', () => setCanvasBackground('#ffffff'));
-      document.getElementById('bgBlackBtn')?.addEventListener('click', () => setCanvasBackground('#000000'));
+      document.getElementById('themeToggleBtn')?.addEventListener('click', toggleTheme);
+      setTheme(readThemePref() || 'light', { persist: false });
+      document.getElementById('canvasBgBtn')?.addEventListener('click', e => {
+        e.stopPropagation();
+        const menu = document.getElementById('canvasBgDropdown');
+        const wasOpen = menu?.classList.contains('open');
+        closeAllDropdowns();
+        if (!wasOpen) menu?.classList.add('open');
+      });
+      document.getElementById('canvasBgDropdown')?.addEventListener('click', e => e.stopPropagation());
+      document.querySelectorAll('#canvasBgSwatches [data-canvas-bg]').forEach(btn => {
+        btn.addEventListener('click', () => setCanvasBackground(btn.getAttribute('data-canvas-bg')));
+      });
+      document.getElementById('canvasBgCustom')?.addEventListener('input', e => setCanvasBackground(e.target.value));
 
       document.getElementById('masterFlowBtn')?.addEventListener('click', () => {
         state.flowEnabled = !state.flowEnabled;
@@ -5317,11 +5536,12 @@
 
         sCtx.save();
         sCtx.setTransform(1, 0, 0, 1, 0, 0);
-        sCtx.fillStyle = state.canvasBg;
+        const frameBg = getEffectiveCanvasBg();
+        sCtx.fillStyle = frameBg;
         sCtx.fillRect(0, 0, staticCanvas.width, staticCanvas.height);
         sCtx.scale(dpr * state.zoom, dpr * state.zoom);
         sCtx.translate(state.scrollX, state.scrollY);
-        const arrowGeoms = renderScenePasses(sCtx, timeSec, { canvasBg: state.canvasBg });
+        const arrowGeoms = renderScenePasses(sCtx, timeSec, { canvasBg: frameBg });
         sCtx.restore();
 
         iCtx.save();
@@ -5342,6 +5562,7 @@
      * ------------------------------------------------------------------------- */
     const LAST_CANVAS_KEY = 'excaliflow:lastCanvas';
     const PROJECTS_PANEL_KEY = 'excaliflow:projectsPanelOpen';
+    const THEME_KEY = 'excaliflow:theme';
     const AUTOSAVE_INTERVAL_MS = 1000;
     const SAVE_RETRY_MS = 5000;
 
@@ -6125,6 +6346,13 @@
         applyStyleProperty,
         serializeScene,
         parseSceneJson,
+        isDarkBackground,
+        setCanvasBackground,
+        setTheme,
+        toggleTheme,
+        getEffectiveCanvasBg,
+        applyDarkThemeFilter,
+        drawFlowParticleAt,
         applyScene,
         sanitizeName,
         uniqueName,
