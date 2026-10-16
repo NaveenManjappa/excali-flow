@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excaliflow Flow Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Patrick+Hand&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* Layout: one reading column (~44rem) with diagrams that may run wider on a grid-paper canvas, like the app itself */
+  :root {
+    --paper: #ffffff;
+    --canvas: #f8f9fa;
+    --ink: #1b1b1f;
+    --muted: #5b5d68;
+    --line: rgba(27, 27, 31, 0.12);
+    --accent: #6965db;
+    --accent-soft: #f1f0ff;
+    --flow: #f08c00;
+    --node-blue: #e7f5ff;
+    --node-amber: #fff3bf;
+    --node-green: #ebfbee;
+    --veil: rgba(255, 255, 255, 0.78);
+    --font-body: 'Assistant', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-hand: 'Patrick Hand', 'Comic Sans MS', 'Chalkboard SE', cursive;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121216; --canvas: #18181d; --ink: #eceef3; --muted: #a3a6b4;
+      --line: rgba(236, 238, 243, 0.14); --accent: #a5a2ff; --accent-soft: rgba(165, 162, 255, 0.12);
+      --flow: #ffb84d; --node-blue: #15273a; --node-amber: #3a3015; --node-green: #16301e;
+      --veil: rgba(18, 18, 22, 0.8); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121216; --canvas: #18181d; --ink: #eceef3; --muted: #a3a6b4;
+    --line: rgba(236, 238, 243, 0.14); --accent: #a5a2ff; --accent-soft: rgba(165, 162, 255, 0.12);
+    --flow: #ffb84d; --node-blue: #15273a; --node-amber: #3a3015; --node-green: #16301e;
+    --veil: rgba(18, 18, 22, 0.8); color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper); color: var(--ink);
+    font: 400 1.0625rem/1.65 var(--font-body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 2.5rem 5rem;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.1rem; }
+  .wide { width: min(64rem, calc(100vw - 32px)); align-self: center; }
+
+  h1, h2, h3 { text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font: 400 clamp(2.4rem, 6vw, 3.4rem)/1.05 var(--font-hand); letter-spacing: 0.01em; }
+  h1 em { font-style: normal; color: var(--accent); }
+  h2 { font: 800 1.7rem/1.2 var(--font-body); margin-top: 2.2rem; }
+  h3 { font: 700 1.2rem/1.3 var(--font-body); margin-top: 1.2rem; display: flex; gap: 0.6rem; align-items: baseline; }
+  h3 .n { font: 400 1.35rem/1 var(--font-hand); color: var(--accent); min-width: 1.4rem; }
+  p, ul, ol { margin: 0; max-width: 65ch; }
+  ul, ol { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .lede { font-size: 1.2rem; color: var(--muted); }
+  .eyebrow { font: 700 0.78rem/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .part { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 2.6rem; padding-top: 1.6rem; border-top: 2px dashed var(--line); }
+  .part h2 { margin-top: 0; }
+
+  kbd, .btn {
+    font: 500 0.82em/1 var(--font-mono); white-space: nowrap;
+    padding: 0.18em 0.45em; border-radius: 6px; border: 1px solid var(--line);
+    border-bottom-width: 2px; background: var(--canvas); color: var(--ink);
+  }
+  .btn { font-family: var(--font-body); font-weight: 700; font-size: 0.88em; color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+
+  nav.toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; margin-top: 0.6rem; }
+  nav.toc div { display: flex; flex-direction: column; gap: 0.25rem; }
+  nav.toc b { font: 400 1.25rem/1.2 var(--font-hand); color: var(--accent); }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); padding-block: 0.2rem; }
+  nav.toc a:hover { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  figure { margin: 0.4rem 0 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .board {
+    overflow-x: auto; border-radius: 14px; border: 1px solid var(--line);
+    background-color: var(--canvas);
+    background-image: radial-gradient(var(--line) 1px, transparent 1.2px);
+    background-size: 20px 20px;
+  }
+  .board svg { display: block; width: 100%; min-width: 34rem; height: auto; }
+  .board.compact svg { min-width: 0; }
+  figcaption { font-size: 0.92rem; color: var(--muted); max-width: 65ch; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 0.8rem; }
+
+  .tip { background: var(--accent-soft); border-radius: 12px; padding: 0.8rem 1rem; max-width: 65ch; }
+  .tip b:first-child { color: var(--accent); }
+  .warn { border: 2px dashed var(--flow); border-radius: 12px; padding: 0.8rem 1rem; max-width: 65ch; }
+
+  /* SVG drawing vocabulary */
+  .nd { stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+  .nd.blue { fill: var(--node-blue); } .nd.amber { fill: var(--node-amber); } .nd.green { fill: var(--node-green); } .nd.plain { fill: var(--paper); }
+  .lbl { font: 400 19px var(--font-hand); fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  .note { font: 400 16px var(--font-hand); fill: var(--muted); }
+  .note.acc { fill: var(--accent); }
+  .ar { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+  .ar.acc { stroke: var(--accent); }
+  .head { fill: var(--ink); } .head.acc { fill: var(--accent); }
+  .dot { fill: var(--flow); }
+  .sel { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .port { fill: var(--paper); stroke: var(--accent); stroke-width: 1.8; }
+  .portplus { stroke: var(--accent); stroke-width: 1.8; }
+  .band { fill: var(--accent); opacity: 0.07; }
+  .bandlbl { font: 700 12px var(--font-body); letter-spacing: 0.1em; fill: var(--accent); text-anchor: middle; }
+  .veil { fill: var(--veil); }
+  .cap { fill: var(--paper); stroke: var(--line); }
+  .captxt { font: 600 15px var(--font-body); fill: var(--ink); }
+  .capmuted { font: 600 13px var(--font-mono); fill: var(--muted); }
+  .key { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+  .keytxt { font: 500 14px var(--font-mono); fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+
+  /* Story strip mock, drawn in HTML like the real panel */
+  .strip { border: 1px solid var(--line); border-radius: 14px; background: var(--paper); padding: 0.7rem; display: flex; flex-direction: column; gap: 0.6rem; box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.18); }
+  .strip-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+  .strip-bar .t { font-weight: 800; margin-right: auto; }
+  .strip-bar span.b { font: 700 0.85rem/1 var(--font-body); padding: 0.45rem 0.65rem; border-radius: 8px; background: var(--canvas); border: 1px solid var(--line); }
+  .strip-bar span.b.primary { background: var(--accent); color: var(--paper); border-color: transparent; }
+  .chips { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.2rem; }
+  .chip { flex: 0 0 auto; display: flex; align-items: center; gap: 0.45rem; border: 1px solid var(--line); border-radius: 10px; padding: 0.35rem 0.5rem; background: var(--canvas); font-size: 0.9rem; }
+  .chip .num { font: 800 0.8rem/1 var(--font-body); width: 1.5rem; height: 1.5rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+  .chip .cap-in { min-width: 7rem; color: var(--ink); }
+  .chip .meta { font: 500 0.75rem/1 var(--font-mono); color: var(--muted); }
+  .chip .x { color: var(--muted); }
+  .callouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0.6rem; font-size: 0.92rem; color: var(--muted); }
+  .callouts b { color: var(--ink); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 700 0.75rem/1.2 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--canvas); }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { white-space: nowrap; }
+
+  dl { margin: 0; display: flex; flex-direction: column; gap: 0.9rem; max-width: 65ch; }
+  dt { font-weight: 700; }
+  dd { margin: 0.15rem 0 0; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+    <marker id="ahA" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head acc" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+</svg>
+
+<main class="wrap">
+  <span class="eyebrow">Excaliflow guide</span>
+  <h1>From a blank canvas to a <em>flow story</em></h1>
+  <p class="lede">This guide builds one small diagram from start to finish: a checkout flow. First you draw it and make the data move. Then you turn it into a story that you can present step by step or record as a video.</p>
+
+  <figure class="wide">
+    <div class="board">
+      <svg viewBox="0 0 1040 300" role="img" aria-label="The finished example: Web App to API Gateway to a Payment OK decision, which branches to Order Service and Retry Payment. Order Service feeds Email and Warehouse.">
+        <g id="example">
+          <rect class="nd blue" x="20" y="140" width="130" height="60" rx="10"/><text class="lbl" x="85" y="170">Web App</text>
+          <rect class="nd blue" x="220" y="140" width="140" height="60" rx="10"/><text class="lbl" x="290" y="170">API Gateway</text>
+          <path class="nd amber" d="M420,170 L500,122 L580,170 L500,218 Z"/><text class="lbl" x="500" y="170">Payment OK?</text>
+          <rect class="nd blue" x="660" y="70" width="150" height="60" rx="10"/><text class="lbl" x="735" y="100">Order Service</text>
+          <rect class="nd plain" x="660" y="210" width="150" height="60" rx="10"/><text class="lbl" x="735" y="240">Retry Payment</text>
+          <ellipse class="nd green" cx="950" cy="50" rx="74" ry="30"/><text class="lbl" x="950" y="50">Email</text>
+          <rect class="nd blue" x="880" y="120" width="140" height="56" rx="10"/><text class="lbl" x="950" y="148">Warehouse</text>
+          <path id="p1" class="ar" marker-end="url(#ah)" d="M152,170 L216,170"/>
+          <path id="p2" class="ar" marker-end="url(#ah)" d="M362,170 L416,170"/>
+          <path id="p3" class="ar" marker-end="url(#ah)" d="M542,146 Q600,100 656,100"/>
+          <path id="p4" class="ar" marker-end="url(#ah)" d="M542,194 Q600,240 656,240"/>
+          <path id="p5" class="ar" marker-end="url(#ah)" d="M812,90 Q850,56 872,53"/>
+          <path id="p6" class="ar" marker-end="url(#ah)" d="M812,112 Q850,146 876,147"/>
+        </g>
+        <g class="particles">
+          <circle class="dot" r="5"><animateMotion dur="2.4s" begin="0s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+          <circle class="dot" r="5"><animateMotion dur="2.4s" begin="0.4s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+          <circle class="dot" r="5"><animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite"><mpath href="#p3"/></animateMotion></circle>
+          <circle class="dot" r="5"><animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite"><mpath href="#p4"/></animateMotion></circle>
+          <circle class="dot" r="5"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#p5"/></animateMotion></circle>
+          <circle class="dot" r="5"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#p6"/></animateMotion></circle>
+        </g>
+      </svg>
+    </div>
+    <figcaption>The finished example. Seven shapes and six arrows. The dots show the flow animation: arrows further down the flow start later, so the movement reads from left to right.</figcaption>
+  </figure>
+
+  <nav class="toc" aria-label="Contents">
+    <div>
+      <b>Part 1 · Build the flow</b>
+      <a href="#first-node">1. Add the first node</a>
+      <a href="#chain">2. Chain the next nodes with Tab</a>
+      <a href="#ports">3. Branch with the + ports</a>
+      <a href="#arrows">4. Shape the arrows</a>
+      <a href="#animate">5. Make the data flow</a>
+    </div>
+    <div>
+      <b>Part 2 · Tell it as a story</b>
+      <a href="#strip">6. Open the Story strip</a>
+      <a href="#auto">7. Draft steps with Auto</a>
+      <a href="#manual">8. Add and edit steps by hand</a>
+      <a href="#present">9. Present it</a>
+      <a href="#record">10. Record a video</a>
+    </div>
+    <div>
+      <b>Reference</b>
+      <a href="#keys">Keyboard cheat sheet</a>
+      <a href="#trouble">When something doesn't work</a>
+    </div>
+  </nav>
+
+  <!-- ================= PART 1 ================= -->
+  <section class="part" id="part1">
+    <span class="eyebrow">Part 1</span>
+    <h2>Build the flow</h2>
+    <p>A flow is a set of shapes joined by arrows. An arrow must be <strong>attached</strong> to a shape at both ends. Attached arrows are what the animation and the story follow, so the steps below create them for you.</p>
+  </section>
+
+  <h3 id="first-node"><span class="n">1</span>Add the first node</h3>
+  <p><strong>Double-click</strong> an empty spot on the canvas. A box appears with its label ready to edit. Type <em>Web App</em> and press <kbd>Esc</kbd>.</p>
+  <p>You can also pick a shape from the tool dock at the bottom and drag it out: <kbd>2</kbd> rectangle, <kbd>3</kbd> diamond, <kbd>4</kbd> ellipse. To rename any shape later, double-click it.</p>
+  <div class="tip"><b>Hand tool first.</b> Excaliflow opens with the Hand tool, so dragging the canvas pans it. Double-click and <kbd>Tab</kbd> work with any tool. To select, move or connect shapes by dragging (steps 3 and 4), switch to the Select tool with <kbd>V</kbd> or <kbd>1</kbd>.</div>
+  <figure>
+    <div class="board compact">
+      <svg viewBox="0 0 640 170" role="img" aria-label="Double-clicking empty canvas creates a box with its label open for typing.">
+        <g transform="translate(70,58)">
+          <circle cx="0" cy="0" r="16" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.5"/>
+          <circle cx="0" cy="0" r="26" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity="0.25"/>
+          <path d="M0,0 L0,24 L6,18 L11,29 L15,27 L10,16 L18,16 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5" stroke-linejoin="round"/>
+        </g>
+        <text class="note acc" x="40" y="125">double-click</text>
+        <path class="ar acc" marker-end="url(#ahA)" d="M150,85 Q240,60 320,80"/>
+        <rect class="nd blue" x="340" y="52" width="160" height="64" rx="10"/>
+        <rect class="sel" x="332" y="44" width="176" height="80" rx="12"/>
+        <text class="lbl" x="414" y="84">Web App</text>
+        <line x1="460" y1="72" x2="460" y2="96" stroke="var(--accent)" stroke-width="2"/>
+        <text class="note" x="350" y="150">type the label, then Esc</text>
+      </svg>
+    </div>
+  </figure>
+
+  <h3 id="chain"><span class="n">2</span>Chain the next nodes with Tab</h3>
+  <p>With <em>Web App</em> selected, press <kbd>Tab</kbd>. Excaliflow adds a new node of the same shape to the right, draws an attached arrow to it and opens its label. Type <em>API Gateway</em>.</p>
+  <p>Keep going: while you are still typing a label, <kbd>Tab</kbd> saves it and chains the next node straight away. Three Tabs give you a whole row of nodes without touching the mouse.</p>
+  <figure>
+    <div class="board">
+      <svg viewBox="0 0 900 170" role="img" aria-label="Before: Web App selected. Press Tab. After: Web App with an arrow to a new API Gateway node whose label is being edited.">
+        <rect class="nd blue" x="30" y="55" width="140" height="60" rx="10"/>
+        <rect class="sel" x="22" y="47" width="156" height="76" rx="12"/>
+        <text class="lbl" x="100" y="85">Web App</text>
+        <text class="note" x="30" y="150">selected</text>
+
+        <rect class="key" x="230" y="64" width="64" height="40" rx="7"/>
+        <text class="keytxt" x="262" y="84">Tab</text>
+        <path class="ar acc" marker-end="url(#ahA)" d="M310,84 L360,84"/>
+
+        <rect class="nd blue" x="400" y="55" width="140" height="60" rx="10"/>
+        <text class="lbl" x="470" y="85">Web App</text>
+        <path class="ar" marker-end="url(#ah)" d="M542,85 L616,85"/>
+        <rect class="nd blue" x="620" y="55" width="150" height="60" rx="10"/>
+        <rect class="sel" x="612" y="47" width="166" height="76" rx="12"/>
+        <text class="lbl" x="695" y="85">API Gateway</text>
+        <line x1="757" y1="73" x2="757" y2="97" stroke="var(--accent)" stroke-width="2"/>
+        <text class="note" x="560" y="150">new node, attached arrow, label open</text>
+      </svg>
+    </div>
+  </figure>
+  <p>For the decision, select <em>API Gateway</em>, press <kbd>Tab</kbd>, then click the <strong>◇</strong> button in the floating toolbar above the selection to turn the new box into a diamond. Label it <em>Payment OK?</em></p>
+
+  <h3 id="ports"><span class="n">3</span>Branch with the + ports</h3>
+  <p>Tab always chains to the right. To branch, hover over or select a shape and four small <strong>+</strong> ports appear on its sides. Each one does a different thing depending on how you use it:</p>
+  <ul>
+    <li><strong>Click</strong> a port to chain a new node in that direction.</li>
+    <li><strong>Drag</strong> from a port and drop on empty canvas to create a connected node right there.</li>
+    <li><strong>Drag</strong> from a port and drop on another shape to connect the two with an arrow.</li>
+  </ul>
+  <figure>
+    <div class="pair">
+      <div class="board compact">
+        <svg viewBox="0 0 420 240" role="img" aria-label="Dragging from the right port of Payment OK onto empty canvas creates a new connected node, Order Service.">
+          <path class="nd amber" d="M40,120 L120,72 L200,120 L120,168 Z"/><text class="lbl" x="120" y="120">Payment OK?</text>
+          <g><circle class="port" cx="120" cy="56" r="9"/><path class="portplus" d="M115,56 h10 M120,51 v10"/></g>
+          <g><circle class="port" cx="120" cy="184" r="9"/><path class="portplus" d="M115,184 h10 M120,179 v10"/></g>
+          <g><circle class="port" cx="24" cy="120" r="9"/><path class="portplus" d="M19,120 h10 M24,115 v10"/></g>
+          <g><circle class="port" cx="216" cy="120" r="9"/><path class="portplus" d="M211,120 h10 M216,115 v10"/></g>
+          <path class="ar acc" marker-end="url(#ahA)" stroke-dasharray="6 5" d="M226,112 Q280,60 300,62"/>
+          <rect class="nd blue" x="290" y="34" width="120" height="56" rx="10"/><text class="lbl" x="350" y="62">Order Service</text>
+          <text class="note acc" x="250" y="130">drag → drop on</text>
+          <text class="note acc" x="250" y="150">empty canvas</text>
+        </svg>
+      </div>
+      <div class="board compact">
+        <svg viewBox="0 0 420 240" role="img" aria-label="Dragging from the bottom-right of Payment OK and dropping on the existing Retry Payment node attaches a new arrow to it.">
+          <path class="nd amber" d="M40,100 L120,52 L200,100 L120,148 Z"/><text class="lbl" x="120" y="100">Payment OK?</text>
+          <g><circle class="port" cx="216" cy="100" r="9"/><path class="portplus" d="M211,100 h10 M216,95 v10"/></g>
+          <rect class="nd plain" x="270" y="160" width="130" height="56" rx="10"/><text class="lbl" x="335" y="188">Retry Payment</text>
+          <rect class="sel" x="262" y="152" width="146" height="72" rx="12"/>
+          <path class="ar acc" marker-end="url(#ahA)" stroke-dasharray="6 5" d="M224,108 Q250,170 266,182"/>
+          <text class="note acc" x="40" y="200">drag → drop on</text>
+          <text class="note acc" x="40" y="220">an existing shape</text>
+        </svg>
+      </div>
+    </div>
+    <figcaption>Left: dropping on empty canvas makes a new node. Right: dropping on a shape attaches the arrow to it. The shape highlights when you're close enough to snap.</figcaption>
+  </figure>
+  <p>To finish the example, add <em>Retry Payment</em> below the decision, then branch <em>Order Service</em> into <em>Email</em> and <em>Warehouse</em>.</p>
+  <div class="tip"><b>Arrow tool.</b> You can also draw arrows by hand with <kbd>A</kbd> or <kbd>5</kbd>. Start the drag on one shape and release on another so both ends attach. An arrow that starts or ends on empty canvas isn't part of the flow.</div>
+
+  <h3 id="arrows"><span class="n">4</span>Shape the arrows</h3>
+  <p>Select an arrow to change its route. The <strong>Straight / Curved / Elbow</strong> buttons are in the floating toolbar and in the properties panel (<kbd>⌘\</kbd>).</p>
+  <figure>
+    <div class="board">
+      <svg viewBox="0 0 900 170" role="img" aria-label="The same pair of boxes joined three ways: a straight arrow, a curved arrow and an elbow arrow.">
+        <g>
+          <rect class="nd plain" x="20" y="30" width="90" height="44" rx="8"/>
+          <rect class="nd plain" x="170" y="100" width="90" height="44" rx="8"/>
+          <path class="ar" marker-end="url(#ah)" d="M110,64 L168,108"/>
+          <text class="note acc" x="20" y="160">Straight</text>
+        </g>
+        <g transform="translate(310,0)">
+          <rect class="nd plain" x="20" y="30" width="90" height="44" rx="8"/>
+          <rect class="nd plain" x="170" y="100" width="90" height="44" rx="8"/>
+          <path class="ar" marker-end="url(#ah)" d="M110,52 Q190,40 212,96"/>
+          <circle cx="178" cy="56" r="5" fill="var(--paper)" stroke="var(--accent)" stroke-width="2"/>
+          <text class="note acc" x="20" y="160">Curved: drag the mid handle</text>
+        </g>
+        <g transform="translate(620,0)">
+          <rect class="nd plain" x="20" y="30" width="90" height="44" rx="8"/>
+          <rect class="nd plain" x="170" y="100" width="90" height="44" rx="8"/>
+          <path class="ar" marker-end="url(#ah)" d="M110,52 L140,52 L140,122 L166,122"/>
+          <text class="note acc" x="20" y="160">Elbow</text>
+        </g>
+      </svg>
+    </div>
+  </figure>
+  <ul>
+    <li><strong>Drag an arrow's end</strong> to slide it around the shape's edge, or drop it on a different shape to reconnect it.</li>
+    <li><strong>⇄</strong> in the toolbar reverses the arrow's direction.</li>
+    <li><strong>Double-click</strong> a curved arrow to straighten it again.</li>
+  </ul>
+
+  <h3 id="animate"><span class="n">5</span>Make the data flow</h3>
+  <p>The <span class="btn">Flow: ON</span> pill in the top-right turns the animation on and off. Excaliflow works out the order of your flow by following the arrows from the shapes that have no incoming arrow. Arrows further along that order start their particles later, so the flow plays out from start to finish.</p>
+  <figure class="wide">
+    <div class="board">
+      <svg viewBox="0 0 1040 330" role="img" aria-label="The example split into five layers by flow order: Web App in layer 0, API Gateway in 1, Payment OK in 2, Order Service and Retry Payment in 3, Email and Warehouse in 4.">
+        <rect class="band" x="10" y="14" width="160" height="300" rx="10"/>
+        <rect class="band" x="200" y="14" width="180" height="300" rx="10"/>
+        <rect class="band" x="405" y="14" width="190" height="300" rx="10"/>
+        <rect class="band" x="645" y="14" width="180" height="300" rx="10"/>
+        <rect class="band" x="866" y="14" width="168" height="300" rx="10"/>
+        <text class="bandlbl" x="90" y="302">LAYER 0</text>
+        <text class="bandlbl" x="290" y="302">LAYER 1</text>
+        <text class="bandlbl" x="500" y="302">LAYER 2</text>
+        <text class="bandlbl" x="735" y="302">LAYER 3</text>
+        <text class="bandlbl" x="950" y="302">LAYER 4</text>
+        <use href="#example"/>
+      </svg>
+    </div>
+    <figcaption>Flow order splits the example into layers. Shapes in the same layer animate together. In Part 2, <span class="btn">Auto</span> turns each layer into one story step.</figcaption>
+  </figure>
+  <p>Choose how the particles look in the <strong>Flow Animation</strong> section of the properties panel:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Mode</th><th>Looks like</th></tr></thead>
+      <tbody>
+        <tr><td>✦ Aurora</td><td>A glowing trail that shifts from warm to cool colours. This is the default and suits tutorials.</td></tr>
+        <tr><td>☄ Comets</td><td>Bright heads with fading tails.</td></tr>
+        <tr><td>◎ Pulses</td><td>Rings that travel along the arrow.</td></tr>
+        <tr><td>⚡ Neon</td><td>An electric glow along the shaft.</td></tr>
+        <tr><td>⋯ Stream</td><td>Marching dashes.</td></tr>
+        <tr><td>⊘ None</td><td>No ongoing animation. Pulse bursts still play.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Speed is <strong>0.6x</strong> (the default), <strong>1x</strong> or <strong>1.8x</strong>. To fire a one-off burst from a node, select it and click <span class="btn">⚡ Pulse</span> in the floating toolbar. The burst follows every outgoing arrow.</p>
+
+  <!-- ================= PART 2 ================= -->
+  <section class="part" id="part2">
+    <span class="eyebrow">Part 2</span>
+    <h2>Tell it as a story</h2>
+    <p>A <strong>flow story</strong> walks through your diagram one step at a time. Each step has a caption and a set of <em>spotlighted</em> shapes. When you present, the camera glides to those shapes, the rest of the diagram dims, and pulses fire from the spotlighted nodes. The story is saved in the canvas file.</p>
+  </section>
+
+  <h3 id="strip"><span class="n">6</span>Open the Story strip</h3>
+  <p>Click <span class="btn">Story</span> in the top bar. The Story strip opens at the bottom of the screen:</p>
+  <figure>
+    <div class="strip" aria-label="Example of the Story strip with six steps">
+      <div class="strip-bar">
+        <span class="t">Flow Story</span>
+        <span class="b">+ Step</span><span class="b">Auto</span><span class="b primary">▶ Play</span><span class="b">● Rec</span>
+      </div>
+      <div class="chips">
+        <div class="chip"><span class="num">1</span><span class="cap-in">The big picture</span><span class="meta">◎</span><span class="x">×</span></div>
+        <div class="chip"><span class="num">2</span><span class="cap-in">Web App</span><span class="meta">1</span><span class="x">×</span></div>
+        <div class="chip"><span class="num">3</span><span class="cap-in">API Gateway</span><span class="meta">2</span><span class="x">×</span></div>
+        <div class="chip"><span class="num">4</span><span class="cap-in">Payment OK?</span><span class="meta">2</span><span class="x">×</span></div>
+        <div class="chip"><span class="num">5</span><span class="cap-in">Order Service · Retry Payment</span><span class="meta">4</span><span class="x">×</span></div>
+        <div class="chip"><span class="num">6</span><span class="cap-in">Email · Warehouse</span><span class="meta">4</span><span class="x">×</span></div>
+      </div>
+    </div>
+    <div class="callouts">
+      <span><b>Number</b>: present from this step.</span>
+      <span><b>Caption</b>: click and type to edit.</span>
+      <span><b>Count</b>: how many shapes and arrows are spotlighted. <b>◎</b> means an overview of the whole diagram.</span>
+      <span><b>×</b>: remove the step.</span>
+    </div>
+    <figcaption>This is what the strip looks like after clicking Auto on the example.</figcaption>
+  </figure>
+
+  <h3 id="auto"><span class="n">7</span>Draft steps with Auto</h3>
+  <p>Click <span class="btn">Auto</span>. Excaliflow drafts a story from the flow order: an overview step called <em>The big picture</em>, then one step per layer (see the layer diagram in step 5). Each layer step spotlights the layer's shapes and the arrows coming into them, and uses their labels as the caption.</p>
+  <p>For the example, that gives the six steps shown above. Now rewrite the captions so they tell the story. For example:</p>
+  <ol>
+    <li>Here's how a checkout travels through our system.</li>
+    <li>The customer clicks <em>Pay</em> in the web app.</li>
+    <li>The gateway checks the session and forwards the request.</li>
+    <li>The payment provider approves or declines it.</li>
+    <li>Approved orders are created. Declined ones get a retry page.</li>
+    <li>The customer gets an email and the warehouse starts packing.</li>
+  </ol>
+  <div class="warn"><b>Auto replaces the whole story.</b> Click it on a fresh story, or when you want to start over. It also skips shapes that have no attached arrows.</div>
+
+  <h3 id="manual"><span class="n">8</span>Add and edit steps by hand</h3>
+  <p>To spotlight exactly what you want, <strong>select</strong> the shapes (shift-click, or drag a box around them) and click <span class="btn">+ Step</span>. The new step goes at the end of the story and takes the first selected label as its caption. With nothing selected, <span class="btn">+ Step</span> adds an overview step.</p>
+  <figure>
+    <div class="board">
+      <svg viewBox="0 0 700 230" role="img" aria-label="Order Service, Email and Warehouse selected together. The two arrows between them light up automatically in the step.">
+        <rect x="300" y="14" width="392" height="200" rx="14" fill="var(--accent)" opacity="0.06" stroke="var(--accent)" stroke-dasharray="6 5" stroke-width="1.5"/>
+        <path class="nd amber" d="M40,140 L110,98 L180,140 L110,182 Z"/><text class="lbl" x="110" y="140">Payment OK?</text>
+        <path class="ar" marker-end="url(#ah)" opacity="0.45" d="M182,128 Q250,100 316,104"/>
+        <rect class="nd blue" x="320" y="76" width="150" height="58" rx="10"/><text class="lbl" x="395" y="105">Order Service</text>
+        <ellipse class="nd green" cx="600" cy="56" rx="72" ry="30"/><text class="lbl" x="600" y="56">Email</text>
+        <rect class="nd blue" x="530" y="132" width="140" height="54" rx="10"/><text class="lbl" x="600" y="159">Warehouse</text>
+        <path class="ar acc" marker-end="url(#ahA)" stroke-width="2.6" d="M472,92 Q505,60 524,58"/>
+        <path class="ar acc" marker-end="url(#ahA)" stroke-width="2.6" d="M472,118 Q505,156 526,158"/>
+        <text class="note acc" x="316" y="200">selection → + Step</text>
+        <text class="note" x="30" y="215">arrow from outside: not included</text>
+      </svg>
+    </div>
+    <figcaption>You don't need to select arrows. An arrow lights up when the shapes at both of its ends are spotlighted.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Edit a caption</strong> by typing in its chip. Captions can be up to 280 characters.</li>
+    <li><strong>Remove a step</strong> with its <strong>×</strong>.</li>
+    <li><strong>Change the order</strong> by removing steps and adding them again. New steps always go at the end, so build the story in the order you'll present it.</li>
+    <li>Story edits aren't part of undo (<kbd>⌘Z</kbd>), but they are saved with the canvas.</li>
+  </ul>
+
+  <h3 id="present"><span class="n">9</span>Present it</h3>
+  <p>Click <span class="btn">▶ Play</span> or press <kbd>Shift</kbd>+<kbd>P</kbd> anywhere. Excaliflow hides the panels, frames the first step and shows its caption at the bottom.</p>
+  <figure class="wide">
+    <div class="board">
+      <svg viewBox="0 0 1040 380" role="img" aria-label="Presenting step 5: Order Service and Retry Payment and their incoming arrows are bright; the rest of the diagram is dimmed. A caption bar at the bottom reads 5 of 6.">
+        <use href="#example"/>
+        <rect class="veil" x="0" y="0" width="1040" height="300"/>
+        <rect class="nd blue" x="660" y="70" width="150" height="60" rx="10"/><text class="lbl" x="735" y="100">Order Service</text>
+        <rect class="nd plain" x="660" y="210" width="150" height="60" rx="10"/><text class="lbl" x="735" y="240">Retry Payment</text>
+        <path class="ar" marker-end="url(#ah)" d="M542,146 Q600,100 656,100"/>
+        <path class="ar" marker-end="url(#ah)" d="M542,194 Q600,240 656,240"/>
+        <circle class="dot" r="6"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#p3"/></animateMotion></circle>
+        <circle class="dot" r="6"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#p4"/></animateMotion></circle>
+        <rect x="610" y="40" width="250" height="260" rx="16" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 6"/>
+        <text class="note acc" x="866" y="290">camera frames this</text>
+        <rect class="cap" x="190" y="318" width="660" height="48" rx="24"/>
+        <text class="capmuted" x="216" y="347">‹</text>
+        <text class="capmuted" x="240" y="347">5 / 6</text>
+        <text class="captxt" x="300" y="347">Approved orders are created. Declined ones get a retry page.</text>
+        <text class="capmuted" x="800" y="347">›</text>
+        <text class="capmuted" x="824" y="347">✕</text>
+      </svg>
+    </div>
+    <figcaption>Step 5 of the example during a presentation. The diagram is dimmed except for the spotlighted shapes, and the caption bar has back, next and exit buttons.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>To</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Go to the next step</td><td><kbd>→</kbd>, <kbd>Space</kbd>, or click anywhere</td></tr>
+        <tr><td>Go back a step</td><td><kbd>←</kbd></td></tr>
+        <tr><td>Stop presenting</td><td><kbd>Esc</kbd>, or <strong>✕</strong> in the caption bar. Going past the last step also stops.</td></tr>
+        <tr><td>Start from a given step</td><td>Click that step's number in the Story strip</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>When you stop, the camera returns to where you were before. If you press Play on a canvas that has no story yet, Excaliflow runs Auto first so you always get a walkthrough.</p>
+
+  <h3 id="record"><span class="n">10</span>Record a video</h3>
+  <p>Click <span class="btn">● Rec</span> to export the story as a 1080p WebM video, with about 2.6 seconds per step. The camera moves, dimming, pulses and captions are all included, so you can drop the video into a slide deck or a pull request. Recording needs a browser that supports <em>MediaRecorder</em>, such as Chrome, Edge or Firefox.</p>
+  <p>To record the ongoing animation without the story, use <strong>⋯ → Record 60fps Video</strong> in the top bar instead.</p>
+
+  <!-- ================= REFERENCE ================= -->
+  <section class="part" id="keys">
+    <span class="eyebrow">Reference</span>
+    <h2>Keyboard cheat sheet</h2>
+  </section>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Double-click canvas</td><td>Add a node and edit its label</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Chain a connected node to the right of the selected one (also works while typing a label)</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Finish editing a label, or stop presenting</td></tr>
+        <tr><td><kbd>H</kbd> / hold <kbd>Space</kbd></td><td>Hand tool: pan the canvas (selected when the app opens)</td></tr>
+        <tr><td><kbd>1</kbd> / <kbd>V</kbd></td><td>Select tool</td></tr>
+        <tr><td><kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></td><td>Rectangle, diamond, ellipse</td></tr>
+        <tr><td><kbd>5</kbd> / <kbd>A</kbd></td><td>Arrow tool</td></tr>
+        <tr><td><kbd>8</kbd> / <kbd>T</kbd></td><td>Text</td></tr>
+        <tr><td><kbd>9</kbd> / <kbd>N</kbd></td><td>Sticky note</td></tr>
+        <tr><td><kbd>Q</kbd></td><td>Keep the current tool after drawing</td></tr>
+        <tr><td><kbd>⌘\</kbd></td><td>Show or hide the properties panel</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>P</kbd></td><td>Play the story</td></tr>
+        <tr><td><kbd>→</kbd> / <kbd>Space</kbd> / <kbd>←</kbd></td><td>Next or previous step while presenting</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="part" id="trouble">
+    <h2>When something doesn't work</h2>
+  </section>
+  <dl>
+    <div><dt>No particles move along an arrow.</dt><dd>Check that <span class="btn">Flow: ON</span> is on and the mode isn't <strong>⊘ None</strong>. Then check that both ends of the arrow are attached: drag each end onto its shape until the shape highlights.</dd></div>
+    <div><dt>Auto leaves out a node.</dt><dd>Auto only includes shapes that have an attached arrow. Connect the node to the flow, then click Auto again.</dd></div>
+    <div><dt>"Draw a few connected shapes first."</dt><dd>Play and Rec need at least one shape. Draw some connected nodes first.</dd></div>
+    <div><dt>An arrow isn't highlighted in my step.</dt><dd>An arrow only lights up when the shapes at both of its ends are in the step, or when you selected the arrow itself before clicking + Step.</dd></div>
+    <div><dt>Undo didn't bring back a deleted step.</dt><dd>Story edits aren't in the undo history. Add the step again with + Step.</dd></div>
+    <div><dt>I deleted a shape that a step used.</dt><dd>The step skips missing shapes. If none are left, the step becomes an overview of the whole diagram.</dd></div>
+  </dl>
+</main>
+
+<script>
+  // Freeze the flow particles for readers who ask for reduced motion
+  try {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('svg').forEach(s => s.pauseAnimations && s.pauseAnimations());
+    }
+  } catch (e) {}
+</script>
+</body>
+</html>
