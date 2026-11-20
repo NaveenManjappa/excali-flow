@@ -9,6 +9,7 @@
 - **Easy arrow editing.** Drag any arrow endpoint around the edge of a shape, pull the middle of an arrow to curve it, or double-click an arrow to straighten it.
 - **Fast diagram building.** Press `Tab` or click a `+` port on any selected shape to add and connect the next step automatically, or drop a shape onto an existing arrow to split it in two.
 - **Ready-made starter templates.** Load built-in diagrams for **AI Agent Swarm**, **RAG Pipeline**, **How Browsers Work**, and **Microservices** in one click.
+- **Personal library.** Save shapes you reuse to a library shared by every canvas, then click or drag them back in. Import `.excalidrawlib` files, or add libraries straight from [libraries.excalidraw.com](https://libraries.excalidraw.com).
 - **Projects & canvases saved as files.** Group canvases into projects in the side panel. Every canvas autosaves to a plain `.excaliflow` file in a workspace folder on your disk, so it works in Safari, Chrome and Firefox and plays well with git or Dropbox.
 - **Light & dark canvas + instant export.** Switch between a clean white canvas and a pitch-black neon canvas, then export a cropped 2x PNG, copy to clipboard, record a `.webm` video loop, or save and load `.excaliflow` / `.excalidraw` JSON files.
 
@@ -33,6 +34,7 @@ workspace/
   Payments/
     Checkout.excaliflow
     Refunds.excaliflow
+  library.excalidrawlib  your personal library, shared by every project
   .trash/              deleted canvases and projects land here, never hard-deleted
 ```
 
@@ -48,6 +50,19 @@ WORKSPACE=~/Diagrams npm start
 - If a canvas file changes on disk while it's open (for example after `git pull`), Excaliflow won't overwrite it. It offers **Reload from disk**, **Overwrite** or **Save as copy**.
 - **Import as Canvas** (⋯ menu) or dropping `.excaliflow` / `.excalidraw` files onto the window adds them as new canvases in the current project.
 - Opening `index.html` directly (`file://`) still works, but only as an unsaved scratch canvas.
+
+## Personal Library
+
+Open the **Library** panel with the book button in the top bar, or press `L`.
+
+- **Add:** select shapes (and the arrows between them) and click **+ Add selection**. An arrow whose other end isn't selected keeps its drawn shape but loses that binding.
+- **Use:** click an item to drop it in the middle of the view, or drag it onto the canvas. Inserting is one undo step.
+- **Manage:** items are grouped by the library they came from (your own additions are under *My items*). **Remove** on a group's header removes that whole library. Hover an item and click ✕ to remove just that one, or Shift-click several and use **Remove** / **Export**. Double-click an item's name to rename it. The search box filters by name.
+- **Import:** click **Import**, or drop `.excalidrawlib` files anywhere on the window. Both Excalidraw v1 and v2 libraries work. Colours, fills, opacity, labels inside shapes, lines and rotated parts are kept. Image elements aren't supported and are skipped. Items you already have are skipped.
+- **Browse:** **Browse libraries ↗** opens [libraries.excalidraw.com](https://libraries.excalidraw.com). Its *Add to Excalidraw* button sends the library back to Excaliflow, which asks before adding it. Only links to `libraries.excalidraw.com` are accepted.
+- **Export:** saves `library.excalidrawlib`, which Excalidraw can open too.
+
+With `npm start` the library is saved as `workspace/library.excalidrawlib`. In scratch mode (`file://`) it stays in your browser.
 
 The API only listens on `127.0.0.1` and refuses requests from other websites, so a page you visit can't read or change your workspace.
 
@@ -67,6 +82,7 @@ The API only listens on `127.0.0.1` and refuses requests from other websites, so
 | `K` | Laser Pointer |
 | `E` or `0` | Eraser |
 | `Q` | Keep selected tool active (Tool Lock) |
+| `L` | Show or hide the Library panel |
 | `Tab` | Add and connect the next shape |
 | `Double-click` | Add a node on empty canvas, edit text, or straighten an arrow |
 | `Alt / Option + Drag` | Duplicate selection while dragging |

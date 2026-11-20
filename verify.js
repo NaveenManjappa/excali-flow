@@ -895,6 +895,229 @@ function apiReq(method, url, { body, headers = {} } = {}) {
   assert.strictEqual(reloaded.textAlign, 'left', 'textAlign survives save and load');
   console.log('[PASS] 12. Defaults (Solid, Bold/Solid, Clean, Hand, Aurora 0.6x) and Excalidraw-style text tool verified');
 
+  // 13. Personal Library: .excalidrawlib parsing, add/insert/dedupe, persistence, /api/library, #addLibrary
+  assert.strictEqual(app.parseLibraryJson('not json'), null, 'Garbage library text is rejected');
+  assert.strictEqual(app.parseLibraryJson(JSON.stringify({ type: 'excalidraw', elements: [] })), null, 'A scene file is not a library');
+  const exItem = [
+    { id: 'box', type: 'rectangle', x: 10, y: 10, width: 120, height: 60, backgroundColor: 'transparent', roughness: 2, strokeColor: '#1e1e1e' },
+    { id: 'lbl', type: 'text', x: 20, y: 30, width: 50, height: 20, text: 'API', originalText: 'API', containerId: 'box', backgroundColor: 'transparent' },
+    { id: 'zig', type: 'line', x: 0, y: 100, points: [[0, 0], [20, 20], [40, 0]], backgroundColor: 'transparent' },
+    { id: 'img', type: 'image', x: 0, y: 0, width: 10, height: 10 },
+    { id: 'gone', type: 'ellipse', x: 0, y: 0, width: 10, height: 10, isDeleted: true }
+  ];
+  const v1 = app.parseLibraryJson(JSON.stringify({ type: 'excalidrawlib', version: 1, library: [exItem, [{ type: 'image' }]] }));
+  assert.strictEqual(v1.items.length, 1, 'v1 libraries parse; items with no usable elements are dropped');
+  const v1Els = v1.items[0].elements;
+  assert.deepStrictEqual(plain(v1Els.map(e => e.type)), ['rectangle', 'freedraw'], 'Unsupported/deleted elements are filtered and bound text is merged');
+  assert.strictEqual(v1Els[0].text, 'API', 'Bound text (containerId) becomes the container label');
+  assert.strictEqual(v1Els[0].fillStyle, 'none', 'Excalidraw transparent background imports unfilled');
+  assert.strictEqual(v1Els[0].roughness, 1.75, 'Excalidraw roughness 2 maps to Cartoon');
+  assert.strictEqual(v1Els[1].points.length, 3, 'A multi-point Excalidraw line keeps its shape as a freedraw stroke');
+  assert(v1Els.every(e => e.id.startsWith('lib-')), 'Library elements get their own ids');
+
+  const v2Text = JSON.stringify({ type: 'excalidrawlib', version: 2, libraryItems: [
+    { id: 'x', name: 'Flow', status: 'published', created: 5, elements: [
+      { id: 'a', type: 'rectangle', x: 0, y: 0, width: 100, height: 50 },
+      { id: 'b', type: 'ellipse', x: 300, y: 0, width: 100, height: 50 },
+      { id: 'ab', type: 'arrow', x: 100, y: 25, x2: 300, y2: 25, startBinding: { elementId: 'a', focusAngle: 0, gap: 4 }, endBinding: { elementId: 'outside', focusAngle: 0, gap: 4 } }
+    ] }
+  ] });
+  const v2 = app.parseLibraryJson(v2Text);
+  const v2Arrow = v2.items[0].elements.find(e => e.type === 'arrow');
+  assert.strictEqual(v2.items[0].name, 'Flow');
+  assert.strictEqual(v2.items[0].id, 'x', 'Valid item ids are kept so they stay stable across reloads');
+  assert.strictEqual(v2Arrow.startBinding.elementId, v2.items[0].elements[0].id, 'Bindings inside an item are remapped to the new ids');
+  assert.strictEqual(v2Arrow.endBinding, null, 'Bindings that leave the item are dropped');
+  const libRoundTrip = JSON.parse(app.serializeLibrary(v2.items));
+  assert.strictEqual(libRoundTrip.type, 'excalidrawlib');
+  assert.strictEqual(libRoundTrip.version, 2);
+  assert.deepStrictEqual(libRoundTrip.libraryItems[0].elements.find(e => e.type === 'arrow').points, [[0, 0], [200, 0]], 'Exported arrows carry Excalidraw points[]');
+  assert.strictEqual(app.parseLibraryJson(JSON.stringify({ type: 'excalidrawlib', libraryItems: Array.from({ length: 1200 }, () => ({ elements: [{ type: 'rectangle' }] })) })).items.length, 1000, 'Library item count is capped');
+
+  const libStore = app.createMemoryStore();
+  assert.strictEqual(await app.connectWorkspace(libStore), true);
+  assert.strictEqual(app.state.library.items.length, 0, 'A fresh workspace has an empty library');
+
+  app.state.elements = [];
+  const lA = app.createElement('rectangle', { id: 'libA', x: 1000, y: 2000, width: 100, height: 60, text: 'Gateway' });
+  const lB = app.createElement('rectangle', { id: 'libB', x: 1300, y: 2000, width: 100, height: 60 });
+  const lOut = app.createElement('rectangle', { id: 'libOut', x: 1000, y: 2400, width: 100, height: 60 });
+  const lAB = app.createElement('arrow', { id: 'libAB', x: 1100, y: 2030, x2: 1300, y2: 2030, startBinding: { elementId: 'libA', focusAngle: 0, gap: 4 }, endBinding: { elementId: 'libB', focusAngle: Math.PI, gap: 4 } });
+  const lAOut = app.createElement('arrow', { id: 'libAOut', x: 1050, y: 2060, x2: 1050, y2: 2400, startBinding: { elementId: 'libA', focusAngle: Math.PI / 2, gap: 4 }, endBinding: { elementId: 'libOut', focusAngle: -Math.PI / 2, gap: 4 } });
+  app.state.elements.push(lA, lB, lOut, lAB, lAOut);
+  app.getElementsBounds(app.state.elements, 0); // settle bound-arrow endpoints, as the first render would
+  const sceneKeyWithShapes = app.sceneContentKey();
+  app.state.selectedIds = new Set(['libA', 'libB', 'libAB', 'libAOut']);
+  const added = app.addSelectionToLibrary();
+  assert(added, 'Selection is added to the library');
+  assert.strictEqual(added.name, 'Gateway', 'Item is named after its first label');
+  assert.strictEqual(app.state.library.items[0].id, added.id, 'New items are listed first');
+  const addedXs = added.elements.filter(e => e.type !== 'arrow').map(e => e.x);
+  assert(Math.min(...added.elements.map(e => e.x)) >= -0.01 && Math.min(...addedXs) < 0.01, 'Item is translated so its bounds start at the origin');
+  const inner = added.elements.find(e => e.type === 'arrow' && e.endBinding);
+  const outer = added.elements.find(e => e.type === 'arrow' && !e.endBinding);
+  assert(inner && inner.startBinding, 'An arrow between two selected shapes keeps both bindings');
+  assert(outer && outer.startBinding && outer.endBinding === null, 'A binding to an unselected shape is dropped');
+  assert(Math.abs(outer.y2 - outer.y) > 200, 'The dropped end keeps its drawn endpoint');
+  assert.strictEqual(app.addSelectionToLibrary(), null, 'Adding the same content twice is a no-op');
+  assert.strictEqual(app.state.library.items.length, 1);
+  assert.strictEqual(app.sceneContentKey(), sceneKeyWithShapes, 'Library changes never touch scene content');
+
+  const undoDepth = app.state.history.undoStack.length;
+  const countBefore = app.state.elements.length;
+  const clones = app.insertLibraryItem(added.id, 5000, 5000);
+  assert.strictEqual(clones.length, 4, 'Inserting an item adds all of its elements');
+  assert.strictEqual(app.state.elements.length, countBefore + 4);
+  assert.strictEqual(app.state.history.undoStack.length, undoDepth + 1, 'Inserting is one undo step');
+  assert(clones.every(c => !added.elements.some(e => e.id === c.id) && !c.id.startsWith('lib-')), 'Inserted elements get fresh scene ids');
+  assert.deepStrictEqual(plain([...app.state.selectedIds].sort()), plain(clones.map(c => c.id).sort()), 'Inserted elements are selected');
+  const insArrow = clones.find(c => c.type === 'arrow' && c.endBinding);
+  assert(clones.some(c => c.id === insArrow.startBinding.elementId) && clones.some(c => c.id === insArrow.endBinding.elementId), 'Inserted arrows bind to the inserted shapes');
+  const insBounds = app.getElementsBounds(clones, 0);
+  assert(Math.abs(insBounds.x + insBounds.width / 2 - 5000) < 30, 'Item is centred on the drop point');
+  app.undo();
+  assert.strictEqual(app.state.elements.length, countBefore, 'One undo removes the inserted item');
+  assert.strictEqual(app.insertLibraryItem('missing', 0, 0).length, 0, 'Unknown item ids insert nothing');
+
+  const imported = await app.importLibraryText(v2Text);
+  assert.deepStrictEqual(plain(imported), { added: 1, skipped: 0 }, 'Importing a library merges its items');
+  const importedAgain = await app.importLibraryText(v2Text);
+  assert.deepStrictEqual(plain(importedAgain), { added: 0, skipped: 1 }, 'Re-importing skips duplicates by content');
+  assert.strictEqual(await app.importLibraryText('{"nope":1}'), null, 'Invalid library text is rejected');
+  assert.strictEqual(app.state.library.items.length, 2);
+
+  assert.strictEqual(await app.saveLibraryNow(), true, 'Library saves through the workspace store');
+  const savedLib = JSON.parse((await libStore.readLibrary()).text);
+  assert.strictEqual(savedLib.libraryItems.length, 2, 'Saved library holds every item');
+  assert.strictEqual(app.renameLibraryItem(added.id, 'Gateway pair'), true);
+  assert.strictEqual(app.removeLibraryItems([app.state.library.items[0].id]), 1, 'Items can be removed');
+  // Another tab adds an item behind our back: our save hits a 409, merges the disk copy and retries
+  const disk = await libStore.readLibrary();
+  const diskData = JSON.parse(disk.text);
+  diskData.libraryItems.push({ id: 'ext', name: 'From other tab', elements: [{ type: 'diamond', x: 0, y: 0, width: 80, height: 80 }] });
+  await libStore.writeLibrary(JSON.stringify(diskData), disk.modified);
+  assert.strictEqual(await app.saveLibraryNow(), true, 'A stale library save merges and retries');
+  const afterConflict = JSON.parse((await libStore.readLibrary()).text).libraryItems.map(i => i.name);
+  assert(afterConflict.includes('Gateway pair') && afterConflict.includes('From other tab'), 'Conflict merge keeps both sides');
+  await assert.rejects(libStore.writeLibrary('{}', -5), err => err.status === 409, 'Memory store rejects stale library writes');
+  assert.strictEqual(await app.loadLibrary(), app.state.library.items.length, 'Library reloads from the store');
+  assert(app.state.library.items.some(i => i.name === 'Gateway pair'), 'Renames persist');
+  assert.strictEqual(app.isCanvasDirty(), app.sceneContentKey() !== app.state.workspace.lastSavedKey, 'Canvas dirtiness ignores the library');
+
+  const exportedText = app.exportLibrary();
+  assert.strictEqual(JSON.parse(exportedText).libraryItems.length, app.state.library.items.length, 'Export writes every item');
+  assert.strictEqual(JSON.parse(app.exportLibrary([added.id])).libraryItems.length, 1, 'Export can be limited to selected items');
+
+  // .excalidrawlib files dropped or picked go to the library, not to a new canvas
+  const canvasCountBefore = (await libStore.getWorkspace()).projects.reduce((n, p) => n + p.canvases.length, 0);
+  const sandboxFileReader = sandbox.FileReader;
+  sandbox.FileReader = class { readAsText(file) { this.onload({ target: { result: file.text } }); } };
+  const libItemsBefore = app.state.library.items.length;
+  await app.importSceneFiles([{ name: 'shapes.excalidrawlib', text: JSON.stringify({ type: 'excalidrawlib', version: 2, libraryItems: [{ elements: [{ type: 'ellipse', x: 0, y: 0, width: 33, height: 33 }] }] }) }]);
+  sandbox.FileReader = sandboxFileReader;
+  assert.strictEqual(app.state.library.items.length, libItemsBefore + 1, 'A dropped .excalidrawlib is merged into the library');
+  assert.strictEqual((await libStore.getWorkspace()).projects.reduce((n, p) => n + p.canvases.length, 0), canvasCountBefore, '…and does not create a canvas');
+
+  // #addLibrary links from libraries.excalidraw.com
+  assert(app.isAllowedLibraryUrl('https://libraries.excalidraw.com/libraries/acme/aws.excalidrawlib'));
+  for (const bad of ['http://libraries.excalidraw.com/x.excalidrawlib', 'https://evil.example/x.excalidrawlib',
+    'https://libraries.excalidraw.com.evil.example/x', 'https://libraries.excalidraw.com@evil.example/x', 'javascript:alert(1)']) {
+    assert(!app.isAllowedLibraryUrl(bad), `Library URL must be rejected: ${bad}`);
+  }
+  let fetched = null;
+  const stubFetch = async url => {
+    fetched = url;
+    return { ok: true, text: async () => JSON.stringify({ type: 'excalidrawlib', version: 2, libraryItems: [{ name: 'Cloud', elements: [{ type: 'ellipse', x: 0, y: 0, width: 77, height: 41 }] }] }) };
+  };
+  assert.strictEqual(await app.handleAddLibraryHash('#addLibrary=' + encodeURIComponent('https://evil.example/x.excalidrawlib') + '&token=t', stubFetch), false, 'Foreign #addLibrary hosts are refused');
+  assert.strictEqual(fetched, null, '…without fetching anything');
+  assert.strictEqual(await app.handleAddLibraryHash('#token=t', stubFetch), false, 'Hashes without addLibrary are ignored');
+  const okUrl = 'https://libraries.excalidraw.com/libraries/acme/cloud.excalidrawlib';
+  assert.strictEqual(await app.handleAddLibraryHash('#addLibrary=' + encodeURIComponent(okUrl) + '&token=t', stubFetch), true, 'Catalogue links are fetched and merged');
+  assert.strictEqual(fetched, okUrl);
+  assert(app.state.library.items.some(i => i.name === 'Cloud'), 'Catalogue items land in the library');
+  assert.strictEqual(app.state.library.panelOpen, true, 'The library panel opens after an import');
+
+  // Excalidraw rendering fidelity: colours, lines, rotation, opacity, invisible helpers
+  const fid = app.parseLibraryJson(JSON.stringify({ type: 'excalidrawlib', version: 2, libraryItems: [{ elements: [
+    { id: 'f1', type: 'rectangle', x: 0, y: 0, width: 40, height: 20, angle: 0, strokeColor: '#1971c2', backgroundColor: '#a5d8ff', fillStyle: 'solid' },
+    { id: 'f2', type: 'line', x: 0, y: 0, angle: 0, points: [[0, 0], [30, 0]], strokeColor: '#000', backgroundColor: 'transparent' },
+    { id: 'f3', type: 'line', x: 0, y: 0, angle: 0, points: [[0, 0], [10, 0], [10, 10], [0, 0]], strokeColor: '#000000', backgroundColor: '#fff', fillStyle: 'solid' },
+    { id: 'f4', type: 'rectangle', x: 0, y: 0, width: 20, height: 10, angle: Math.PI / 2, strokeColor: '#000000', backgroundColor: 'transparent' },
+    { id: 'f5', type: 'ellipse', x: 0, y: 0, width: 20, height: 20, angle: 0, strokeColor: 'transparent', backgroundColor: 'transparent' },
+    { id: 'f6', type: 'rectangle', x: 0, y: 0, width: 20, height: 20, angle: 0, opacity: 50, strokeColor: '#000000', backgroundColor: '#ff0000' },
+    { id: 'f7', type: 'arrow', x: 0, y: 0, angle: 0, points: [[0, 0], [50, 0]], endArrowhead: 'arrow', strokeColor: '#000000', backgroundColor: 'transparent' }
+  ] }] })).items[0].elements;
+  assert.strictEqual(fid.length, 6, 'Fully transparent Excalidraw elements are dropped');
+  assert.strictEqual(fid[0].backgroundColor, '#a5d8ff', 'Excalidraw backgroundColor is kept');
+  assert.strictEqual(fid[0].strokeColor, '#1971c2', 'Non-palette stroke colours are kept');
+  assert.strictEqual(app.resolveStrokeColor('#1971c2', '#ffffff'), '#1971c2', 'Custom stroke colours render as themselves');
+  assert(fid[1].type === 'freedraw' && fid[1].polyline && !fid[1].closed, 'A 2-point Excalidraw line is a polyline, not a flowing arrow');
+  assert.strictEqual(fid[1].strokeColor, '#000000', '#rgb colours are expanded');
+  assert(fid[2].polyline && fid[2].closed && fid[2].backgroundColor === '#ffffff', 'Closed lines keep their fill');
+  assert(fid[3].polyline && fid[3].closed, 'Rotated shapes become closed polylines');
+  const rotXs = fid[3].points.map(p => p[0]);
+  assert(Math.abs(Math.max(...rotXs) - Math.min(...rotXs) - 10) < 0.01, 'Rotation is baked into the outline (20x10 turned 90° is 10 wide)');
+  assert.strictEqual(fid[4].backgroundColor, '#ff8080', 'Opacity is baked into the fill colour');
+  assert.strictEqual(fid[5].type, 'arrow', 'Arrows with arrowheads stay animated arrows');
+  const fidCtx = createMockCtx();
+  const fillColors = [];
+  fidCtx.fill = function () { fillColors.push(this.fillStyle); };
+  app.drawStaticElement(fidCtx, fid[0], { canvasBg: '#ffffff' });
+  assert(fillColors.includes('#a5d8ff'), 'Shapes fill with their backgroundColor');
+  const plainRect = app.createElement('rectangle', { x: 0, y: 0 });
+  assert(!('backgroundColor' in plainRect) && !('polyline' in plainRect), 'Native elements carry no Excalidraw-only fields');
+
+  // Libraries are grouped by source and can be removed as a whole
+  const groupsBefore = app.state.library.items.length;
+  await app.importLibraryText(JSON.stringify({ type: 'excalidrawlib', version: 2, libraryItems: [
+    { elements: [{ type: 'diamond', x: 0, y: 0, width: 31, height: 31 }] },
+    { elements: [{ type: 'diamond', x: 0, y: 0, width: 32, height: 32 }] }
+  ] }), { libraryName: 'aws serverless' });
+  const groups = app.getLibraryGroups();
+  assert.strictEqual(groups[0].libraryName, '', 'The user\'s own items are listed first');
+  const awsGroup = groups.find(g => g.libraryName === 'aws serverless');
+  assert(awsGroup && awsGroup.items.length === 2, 'Imported items are grouped under their library');
+  assert(groups.some(g => g.libraryName === 'shapes'), 'Dropped files are named after the file');
+  assert(groups.some(g => g.libraryName === 'cloud'), 'Catalogue links are named after the library file');
+  assert.strictEqual(app.removeLibraryGroup('aws serverless'), 2, 'A whole library can be removed');
+  assert.strictEqual(app.state.library.items.length, groupsBefore);
+  assert(!app.getLibraryGroups().some(g => g.libraryName === 'aws serverless'));
+  assert.strictEqual(JSON.parse(app.serializeLibrary(app.state.library.items)).libraryItems.find(i => i.name === 'Cloud').libraryName, 'cloud', 'The source library name is saved');
+
+  // server.js /api/library
+  const libRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'excaliflow-lib-'));
+  server.setWorkspaceRoot(libRoot);
+  try {
+    const libNoHeader = await apiReq('GET', '/api/library', { headers: { 'x-excaliflow': undefined } });
+    assert.strictEqual(libNoHeader.statusCode, 403, '/api/library requires X-Excaliflow');
+    const emptyLib = await apiReq('GET', '/api/library');
+    assert.strictEqual(emptyLib.statusCode, 200);
+    assert.deepStrictEqual(emptyLib.json.libraryItems, [], 'A missing library file reads as an empty library');
+    assert.strictEqual(emptyLib.headers['X-Modified'], '0');
+    const libBody = JSON.stringify({ type: 'excalidrawlib', version: 2, libraryItems: [{ id: 'i', elements: [] }] });
+    const notLib = await apiReq('PUT', '/api/library', { body: { type: 'excaliflow', elements: [] }, headers: { 'if-unmodified-since-ms': '0' } });
+    assert.strictEqual(notLib.statusCode, 400, 'PUT /api/library validates the excalidrawlib shape');
+    const badJson = await apiReq('PUT', '/api/library', { body: '{oops', headers: { 'if-unmodified-since-ms': '0' } });
+    assert.strictEqual(badJson.statusCode, 400, 'PUT /api/library rejects invalid JSON');
+    const put1 = await apiReq('PUT', '/api/library', { body: libBody, headers: { 'if-unmodified-since-ms': '0' } });
+    assert.strictEqual(put1.statusCode, 200, 'First library write succeeds');
+    assert(fs.existsSync(path.join(libRoot, 'library.excalidrawlib')), 'Library is stored as workspace/library.excalidrawlib');
+    const got = await apiReq('GET', '/api/library');
+    assert.strictEqual(got.body, libBody, 'Library round-trips');
+    const stalePut = await apiReq('PUT', '/api/library', { body: libBody, headers: { 'if-unmodified-since-ms': '0' } });
+    assert.strictEqual(stalePut.statusCode, 409, 'A stale library write returns 409');
+    const freshPut = await apiReq('PUT', '/api/library', { body: libBody, headers: { 'if-unmodified-since-ms': String(put1.json.modified) } });
+    assert.strictEqual(freshPut.statusCode, 200);
+    const libPost = await apiReq('POST', '/api/library', { body: libBody });
+    assert.strictEqual(libPost.statusCode, 405, 'Only GET and PUT are allowed on /api/library');
+    const wsList = await apiReq('GET', '/api/workspace');
+    assert.deepStrictEqual(wsList.json.projects, [], 'The library file is not listed as a project');
+  } finally {
+    fs.rmSync(libRoot, { recursive: true, force: true });
+  }
+  console.log('[PASS] 13. Personal Library: .excalidrawlib v1/v2 import (bound text, colours, lines, rotation), per-library removal, add/insert/undo, dedupe, store + /api/library persistence & 409 merge, #addLibrary allowlist verified');
+
   console.log('\nALL EXCALIFLOW VERIFICATION CHECKS PASSED SUCCESSFULLY!');
 })().catch(err => {
   console.error(err);

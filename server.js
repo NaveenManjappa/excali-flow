@@ -30,6 +30,7 @@ const MIME_TYPES = {
  * Workspace: projects are folders, canvases are <name>.excaliflow files
  * ------------------------------------------------------------------------- */
 const CANVAS_EXT = '.excaliflow';
+const LIBRARY_FILE = 'library.excalidrawlib';
 const TRASH_DIR = '.trash';
 const MAX_BODY_BYTES = 10 * 1024 * 1024;
 const ALLOWED_API_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
@@ -96,6 +97,23 @@ function validateSceneText(text) {
   if (!data || typeof data !== 'object' || !Array.isArray(data.elements)) {
     throw new ApiError(400, 'Canvas body must contain an elements array');
   }
+}
+
+function validateLibraryText(text) {
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new ApiError(400, 'Library body must be valid JSON');
+  }
+  if (!data || typeof data !== 'object' || data.type !== 'excalidrawlib' ||
+      !(Array.isArray(data.libraryItems) || Array.isArray(data.library))) {
+    throw new ApiError(400, 'Library body must be an excalidrawlib with a libraryItems array');
+  }
+}
+
+function emptyLibraryText() {
+  return JSON.stringify({ type: 'excalidrawlib', version: 2, source: 'excaliflow', libraryItems: [] }, null, 2);
 }
 
 function emptySceneText() {
@@ -241,6 +259,36 @@ async function routeApi(req, res, segments) {
     }
     sendJson(res, 200, { name: path.basename(workspaceRoot), projects });
     return;
+  }
+
+  // GET / PUT /api/library: the personal library shared by every project and canvas
+  if (segments.length === 1 && segments[0] === 'library') {
+    const file = insideWorkspace(LIBRARY_FILE);
+    const st = await statOrNull(file);
+    const modified = st && st.isFile() ? st.mtimeMs : 0;
+    if (method === 'GET') {
+      const text = modified ? await fsp.readFile(file, 'utf8') : emptyLibraryText();
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Modified': String(modified)
+      });
+      res.end(text);
+      return;
+    }
+    if (method === 'PUT') {
+      const expected = (req.headers || {})['if-unmodified-since-ms'];
+      if (expected !== undefined && Math.abs(Number(expected) - modified) > 0.5) {
+        sendJson(res, 409, { error: 'Library changed on disk', modified });
+        return;
+      }
+      const text = await readBody(req);
+      validateLibraryText(text);
+      await writeAtomic(file, text);
+      sendJson(res, 200, { modified: (await fsp.stat(file)).mtimeMs });
+      return;
+    }
+    throw new ApiError(405, 'Method not allowed');
   }
 
   if (segments[0] !== 'projects') throw new ApiError(404, 'Not found');

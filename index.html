@@ -455,6 +455,236 @@
       left: 256px;
     }
 
+    /* Library Panel (#libraryPanel) - personal library tiles, docked on the right */
+    #libraryPanel {
+      position: fixed;
+      top: 64px;
+      right: 12px;
+      max-height: calc(100vh - 132px);
+      width: 264px;
+      z-index: 19;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease;
+    }
+
+    #libraryPanel.collapsed {
+      transform: translateX(290px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #libraryPanel .pp-head .ui-btn {
+      height: 26px;
+      padding: 0 8px;
+    }
+
+    .lp-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .lp-actions .ui-btn {
+      height: 28px;
+      padding: 0 8px;
+      font-size: 12px;
+    }
+
+    .lp-actions #lpAddBtn {
+      flex: 1;
+    }
+
+    .lp-actions #lpAddBtn:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .lp-search {
+      height: 28px;
+      padding: 0 9px;
+      border-radius: 7px;
+      border: 1px solid var(--divider);
+      background: var(--surface-subtle);
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .lp-search:focus {
+      border-color: var(--accent);
+    }
+
+    .lp-selbar {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 0 2px 0 4px;
+    }
+
+    .lp-selbar.show {
+      display: flex;
+    }
+
+    .lp-selbar span {
+      flex: 1;
+    }
+
+    .lp-selbar .ui-btn {
+      height: 24px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+
+    .lp-grid {
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      min-height: 60px;
+    }
+
+    .lp-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--divider);
+      background: var(--surface-subtle);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lp-item:hover {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+
+    .lp-item.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .lp-item {
+      position: relative;
+    }
+
+    .lp-del {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 20px;
+      height: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid var(--divider);
+      border-radius: 5px;
+      background: var(--panel-bg);
+      color: var(--text-secondary);
+      font-size: 10px;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    .lp-item:hover .lp-del {
+      display: flex;
+    }
+
+    .lp-del:hover {
+      color: #e03131;
+      border-color: #e03131;
+    }
+
+    .lp-group-head {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 2px 0 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .lp-group-head:first-child {
+      padding-top: 0;
+    }
+
+    .lp-group-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-transform: capitalize;
+    }
+
+    .lp-group-count {
+      flex: 1;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .lp-group-del {
+      border: none;
+      background: none;
+      padding: 2px 4px;
+      border-radius: 5px;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .lp-group-del:hover {
+      color: #e03131;
+      background: var(--surface-hover);
+    }
+
+    .lp-thumb {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .lp-thumb canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .lp-name {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    .lp-empty {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 14px 8px;
+    }
+
+    .lp-browse {
+      height: 28px;
+      justify-content: center;
+      font-size: 12px;
+    }
+
     /* Projects Panel (#projectsPanel) - Projects → Canvases tree backed by server.js /api */
     #projectsPanel {
       position: fixed;
@@ -639,10 +869,20 @@
     }
 
     /* Header breadcrumb: Project / Canvas + save status */
+    /* On narrow windows the breadcrumb gives up space first, so the right-hand buttons stay on screen */
+    #topHeaderBar > .header-group:first-child {
+      min-width: 0;
+    }
+
+    #topHeaderBar > .header-group:first-child > :not(.canvas-crumb) {
+      flex-shrink: 0;
+    }
+
     .canvas-crumb {
       display: inline-flex;
       align-items: center;
       gap: 3px;
+      min-width: 0;
       max-width: 300px;
       font-size: 12px;
       color: var(--text-muted);
@@ -650,14 +890,19 @@
 
     .crumb-project {
       max-width: 110px;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .crumb-canvas {
+      display: block;
+      line-height: 30px;
       max-width: 160px;
+      min-width: 0;
       overflow: hidden;
+      white-space: nowrap;
       text-overflow: ellipsis;
       color: var(--text-primary);
       font-weight: 600;
@@ -1184,6 +1429,10 @@
 
     <!-- Right Island: Story + Live Flow Pill + Canvas Theme + Share/Export -->
     <div class="header-group glass-panel">
+      <button id="libraryToggleBtn" class="ui-btn" title="Library: your reusable shapes (L)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H19v-3"/><path d="M9 7h6"/></svg>
+      </button>
+      <div class="v-divider"></div>
       <button id="storyToggleBtn" class="ui-btn" title="Flow Story: present the diagram step by step (Shift+P plays)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg>
         <span>Story</span>
@@ -1225,7 +1474,7 @@
           <div class="menu-sep"></div>
           <button id="btnSaveJson" class="ui-btn menu-item"><span>Export .excaliflow</span><span>⌘S</span></button>
           <button id="btnLoadJson" class="ui-btn menu-item"><span>Import as Canvas</span><span>Open</span></button>
-          <input type="file" id="jsonFileInput" accept=".json,.excaliflow,.excalidraw" multiple style="display:none" />
+          <input type="file" id="jsonFileInput" accept=".json,.excaliflow,.excalidraw,.excalidrawlib" multiple style="display:none" />
           <div class="menu-sep"></div>
           <button id="btnClearScene" class="ui-btn menu-item danger"><span>Clear Canvas</span><span>⌫</span></button>
         </div>
@@ -1242,6 +1491,29 @@
     </div>
     <div id="ppNotice" class="pp-notice"></div>
     <div id="ppTree" class="pp-tree"></div>
+  </aside>
+
+  <!-- Library Panel (#libraryPanel): personal .excalidrawlib items shared by every canvas -->
+  <aside id="libraryPanel" class="glass-panel collapsed" aria-label="Library">
+    <div class="pp-head">
+      <span class="pp-title">Library</span>
+      <span id="lpCount" class="pp-meta"></span>
+      <button id="lpCloseBtn" class="ui-btn" title="Close library (L)">✕</button>
+    </div>
+    <div class="lp-actions">
+      <button id="lpAddBtn" class="ui-btn primary" title="Add the selected elements to your library">+ Add selection</button>
+      <button id="lpImportBtn" class="ui-btn" title="Import .excalidrawlib files">Import</button>
+      <button id="lpExportBtn" class="ui-btn" title="Export the library (or the selected items) as .excalidrawlib">Export</button>
+    </div>
+    <input id="lpSearch" class="lp-search" type="search" placeholder="Search library…" aria-label="Search library" />
+    <div id="lpSelBar" class="lp-selbar">
+      <span id="lpSelCount"></span>
+      <button id="lpDeleteBtn" class="ui-btn danger" title="Remove the selected items from your library">Remove</button>
+      <button id="lpClearSelBtn" class="ui-btn" title="Clear item selection">Done</button>
+    </div>
+    <div id="lpGrid" class="lp-grid"></div>
+    <button id="lpBrowseBtn" class="ui-btn lp-browse" title="Open the public library catalogue at libraries.excalidraw.com">Browse libraries ↗</button>
+    <input type="file" id="lpFileInput" accept=".excalidrawlib,.json" multiple style="display:none" />
   </aside>
 
   <!-- Conflict Bar: the open canvas file changed on disk -->
@@ -1523,7 +1795,27 @@
       return state.theme === 'dark' ? applyDarkThemeFilter(state.canvasBg) : state.canvasBg;
     }
 
+    function isPaletteColor(hex) {
+      const norm = String(hex || '').toLowerCase();
+      return SEMANTIC_COLORS.some(c => c.hex.toLowerCase() === norm);
+    }
+
+    // '#abc' / '#aabbcc' / '#aabbccdd' → '#aabbcc'; anything else (named colours, 'transparent') → null
+    function normalizeHexColor(value) {
+      const v = String(value || '').trim().toLowerCase();
+      if (/^#[0-9a-f]{3}$/.test(v)) return '#' + v.slice(1).split('').map(c => c + c).join('');
+      if (/^#[0-9a-f]{6}([0-9a-f]{2})?$/.test(v)) return v.slice(0, 7);
+      return null;
+    }
+
+    // Colours outside the palette (e.g. from Excalidraw libraries) keep their hex; on a dark canvas they
+    // get the same invert + hue-rotate Excalidraw's dark theme applies
+    function resolveCustomColor(hex, canvasBg) {
+      return isDarkBackground(canvasBg || getEffectiveCanvasBg()) ? applyDarkThemeFilter(hex) : hex;
+    }
+
     function resolveStrokeColor(hex, canvasBg) {
+      if (!isPaletteColor(hex) && HEX_COLOR_RE.test(String(hex || ''))) return resolveCustomColor(hex, canvasBg);
       const entry = getColorEntry(hex);
       const isDark = isDarkBackground(canvasBg || getEffectiveCanvasBg());
       if (isDark) return entry.darkStroke || entry.hex;
@@ -1609,6 +1901,18 @@
       editingId: null,
       isSpacePanning: false,
       projectsPanelOpen: false,
+      // Personal library (section 19): user content shared by every canvas, never scene content or undo
+      library: {
+        items: [],
+        modified: null,
+        dirty: false,
+        saving: null,
+        loading: null,
+        saveTimer: null,
+        panelOpen: false,
+        search: '',
+        selectedItemIds: new Set()
+      },
       // Open canvas file in the server-backed workspace (section 17); store is null in scratch mode
       workspace: {
         store: null,
@@ -2634,7 +2938,9 @@
       if (!el || el.type === 'arrow') return;
       const canvasBg = opts.canvasBg || getEffectiveCanvasBg();
       const strokeColor = resolveStrokeColor(el.strokeColor, canvasBg);
-      const fillTint = resolveFillTint(el.strokeColor, canvasBg, el.type === 'sticky');
+      // An explicit backgroundColor (Excalidraw-style) replaces the stroke-derived tint
+      const bgColor = HEX_COLOR_RE.test(String(el.backgroundColor || '')) ? resolveCustomColor(el.backgroundColor, canvasBg) : null;
+      const fillTint = bgColor || resolveFillTint(el.strokeColor, canvasBg, el.type === 'sticky');
       const sw = Number(el.strokeWidth) || 2.2;
 
       ctx.save();
@@ -2652,6 +2958,31 @@
         const paths = ShapeCache.get(el);
         ctx.stroke(paths.fillPath);
         ctx.restore();
+      }
+
+      if (el.type === 'freedraw' && el.polyline) {
+        // Sharp-cornered line (Excalidraw "line" elements); closed ones can be filled with their backgroundColor
+        const pts = (el.points || []).filter(p => Array.isArray(p) && p.length >= 2);
+        if (pts.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(el.x + pts[0][0], el.y + pts[0][1]);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(el.x + pts[i][0], el.y + pts[i][1]);
+          if (el.closed) ctx.closePath();
+          const fillStyle = el.fillStyle || 'none';
+          if (el.closed && bgColor && fillStyle !== 'none') {
+            ctx.save();
+            ctx.fillStyle = bgColor;
+            if (fillStyle !== 'solid') ctx.globalAlpha = 0.5;
+            ctx.fill();
+            ctx.restore();
+          }
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = sw;
+          applyDashStyle(ctx, el.strokeStyle, sw);
+          ctx.stroke();
+        }
+        ctx.restore();
+        return;
       }
 
       if (el.type === 'freedraw') {
@@ -2685,7 +3016,9 @@
       const paths = ShapeCache.get(el);
       const fillStyle = el.fillStyle || 'hachure';
 
-      if (fillStyle !== 'none') {
+      // Like Excalidraw, a coloured background with a hachure fill is drawn as hachure lines only
+      const hachured = fillStyle === 'hachure' || fillStyle === 'cross-hatch';
+      if (fillStyle !== 'none' && !(bgColor && hachured)) {
         ctx.save();
         ctx.fillStyle = fillTint;
         if (el.type === 'sticky') {
@@ -2700,8 +3033,8 @@
       if (fillStyle === 'hachure' || fillStyle === 'cross-hatch') {
         ctx.save();
         ctx.clip(paths.fillPath);
-        ctx.strokeStyle = strokeColor;
-        ctx.globalAlpha = isDarkBackground(canvasBg) ? 0.44 : 0.36;
+        ctx.strokeStyle = bgColor || strokeColor;
+        ctx.globalAlpha = bgColor ? 1 : (isDarkBackground(canvasBg) ? 0.44 : 0.36);
         // Excalidraw shape.ts: fillWeight = element.strokeWidth / 2
         ctx.lineWidth = Math.max(1.0, sw * 0.5);
         ctx.setLineDash([]);
@@ -3446,6 +3779,12 @@
         y2: props.y2,
         points: props.points || []
       };
+      const bg = normalizeHexColor(props.backgroundColor);
+      if (bg) base.backgroundColor = bg;
+      if (type === 'freedraw' && props.polyline) {
+        base.polyline = true;
+        if (props.closed) base.closed = true;
+      }
       if (base.text && isNodeElement(base)) {
         autoFitElementToText(base, base.text);
       }
@@ -4926,6 +5265,12 @@
         return;
       }
 
+      if (key === 'l' && !meta && !e.altKey) {
+        e.preventDefault?.();
+        toggleLibraryPanel();
+        return;
+      }
+
       if (key === 'q') {
         e.preventDefault?.();
         toggleToolLock();
@@ -4955,15 +5300,25 @@
     }
 
     // World-space bounds of any subset of the scene (arrows resolve bindings against the full scene)
-    function getElementsBounds(elements, padding = 48) {
+    function getElementsBounds(elements, padding = 48, elementsMap = getElementMap()) {
       if (elements.length === 0) {
         return { x: 0, y: 0, width: 800, height: 500 };
       }
+      const { minX, minY, maxX, maxY } = getElementsExtent(elements, elementsMap);
+      return {
+        x: Math.floor(minX - padding),
+        y: Math.floor(minY - padding),
+        width: Math.max(120, Math.ceil(maxX - minX + padding * 2)),
+        height: Math.max(120, Math.ceil(maxY - minY + padding * 2))
+      };
+    }
+
+    // Exact min/max extent of elements; arrows resolve their bindings through elementsMap
+    function getElementsExtent(elements, elementsMap = getElementMap()) {
       let minX = Infinity;
       let minY = Infinity;
       let maxX = -Infinity;
       let maxY = -Infinity;
-      const elementsMap = getElementMap();
 
       for (const el of elements) {
         if (el.type === 'arrow') {
@@ -4988,13 +5343,8 @@
           maxY = Math.max(maxY, el.y + (el.height || 0));
         }
       }
-
-      return {
-        x: Math.floor(minX - padding),
-        y: Math.floor(minY - padding),
-        width: Math.max(120, Math.ceil(maxX - minX + padding * 2)),
-        height: Math.max(120, Math.ceil(maxY - minY + padding * 2))
-      };
+      if (!Number.isFinite(minX)) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+      return { minX, minY, maxX, maxY };
     }
 
     function renderSceneToExportCtx(offCtx, offCanvas, bounds, scale, timeSec) {
@@ -5147,31 +5497,145 @@
 
     // Validates untrusted scene JSON (.excaliflow / .excalidraw) into { elements, appState }, or null.
     // appState only carries fields that passed validation; camera is present only when complete.
+    // Mixes `hex` toward `target` by t (0..1); used to bake Excalidraw opacity into colours
+    function mixHexColors(hex, target, t) {
+      const a = parseInt(hex.slice(1), 16);
+      const b = parseInt(target.slice(1), 16);
+      const ch = (v, shift) => (v >> shift) & 255;
+      const out = [16, 8, 0].map(sh => Math.round(ch(a, sh) + (ch(b, sh) - ch(a, sh)) * t));
+      return '#' + out.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Rotates relative points by `angle` around (cx, cy)
+    function rotatePoints(points, cx, cy, angle) {
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+      return points.map(([px, py]) => [cx + (px - cx) * c - (py - cy) * s, cy + (px - cx) * s + (py - cy) * c]);
+    }
+
+    function pointsCenter(points) {
+      const xs = points.map(p => p[0]);
+      const ys = points.map(p => p[1]);
+      return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+    }
+
+    // Outline of a rectangle / diamond / ellipse as relative points, for shapes that must become polylines
+    function shapeOutlinePoints(type, w, h) {
+      if (type === 'diamond') return [[w / 2, 0], [w, h / 2], [w / 2, h], [0, h / 2], [w / 2, 0]];
+      if (type === 'ellipse') {
+        const pts = [];
+        for (let i = 0; i <= 48; i++) {
+          const t = (i / 48) * Math.PI * 2;
+          pts.push([w / 2 + (w / 2) * Math.cos(t), h / 2 + (h / 2) * Math.sin(t)]);
+        }
+        return pts;
+      }
+      return [[0, 0], [w, 0], [w, h], [0, h], [0, 0]];
+    }
+
+    function cleanPoints(points) {
+      return (Array.isArray(points) ? points : [])
+        .filter(p => Array.isArray(p) && p.length >= 2)
+        .map(p => [Number(p[0]) || 0, Number(p[1]) || 0]);
+    }
+
+    // Turns untrusted element objects (Excaliflow or Excalidraw) into Excaliflow elements.
+    // Excalidraw compatibility:
+    //  - bound text (containerId) becomes its container's label
+    //  - lines, head-less arrows and unbound multi-point arrows become sharp polylines (freedraw + polyline),
+    //    closed ones keep their fill
+    //  - backgroundColor / strokeColor keep their exact hex; opacity is baked into them; transparent = unfilled
+    //  - rotation (angle) is baked into points; rotated shapes become closed polylines
+    //  - Excalidraw's 0/1/2 roughness maps onto Clean/Artist/Cartoon
+    function normalizeImportedElements(rawElements, maxElements = Infinity) {
+      if (!Array.isArray(rawElements)) return [];
+      const validRaw = rawElements.filter(
+        el => el && typeof el === 'object' && !el.isDeleted && typeof el.type === 'string' && ALLOWED_ELEMENT_TYPES.has(el.type)
+      ).slice(0, maxElements);
+      const isRotated = el => Math.abs(Number(el.angle) || 0) > 0.001;
+
+      const containerIds = new Set(
+        validRaw.filter(el => (el.type === 'rectangle' || el.type === 'ellipse' || el.type === 'diamond' || el.type === 'sticky') && !isRotated(el)).map(el => el.id)
+      );
+      const boundText = new Map();
+      for (const el of validRaw) {
+        if (el.type === 'text' && el.containerId && containerIds.has(el.containerId) && !boundText.has(el.containerId)) {
+          boundText.set(el.containerId, String(el.originalText ?? el.text ?? ''));
+        }
+      }
+
+      // flatMap (not a fresh literal) keeps the result in the input array's realm, like the old .map did
+      return validRaw.flatMap(el => {
+        if (el.type === 'text' && el.containerId && boundText.has(el.containerId)) return [];
+        // Excaliflow elements never carry angle/version or a 'transparent' background
+        const fromExcalidraw = typeof el.angle === 'number' || typeof el.version === 'number' || el.backgroundColor === 'transparent';
+        const compat = {};
+        if (fromExcalidraw) {
+          const opacityRaw = Number(el.opacity);
+          const fade = Number.isFinite(opacityRaw) ? 1 - Math.max(0, Math.min(100, opacityRaw)) / 100 : 0;
+          const stroke = normalizeHexColor(el.strokeColor);
+          const bg = normalizeHexColor(el.backgroundColor);
+          // Fully transparent elements (invisible hit areas in some libraries) are dropped
+          if (String(el.strokeColor).toLowerCase() === 'transparent' && !bg) return [];
+          const strokeHex = stroke || bg; // a transparent stroke shows as the fill colour
+          if (strokeHex) compat.strokeColor = fade ? mixHexColors(strokeHex, '#ffffff', fade) : strokeHex;
+          compat.backgroundColor = bg ? (fade ? mixHexColors(bg, '#ffffff', fade) : bg) : null;
+          if (!bg && el.type !== 'text') compat.fillStyle = 'none';
+          const r = Number(el.roughness);
+          if (r === 0 || r === 1 || r === 2) compat.roughness = [0, 0.85, 1.75][r];
+        }
+        const angle = fromExcalidraw ? Number(el.angle) || 0 : 0;
+        const pts = cleanPoints(el.points);
+        const unbound = !el.startBinding && !el.endBinding;
+        const headless = fromExcalidraw && el.type === 'arrow' && !el.startArrowhead && !el.endArrowhead && unbound;
+        const polylineBase = { ...el, ...compat, text: '', startBinding: null, endBinding: null, polyline: true };
+
+        // Lines and arrows that are really drawings
+        if ((el.type === 'line' || headless || (el.type === 'arrow' && pts.length > 2 && unbound && typeof el.x2 !== 'number')) && pts.length > 1) {
+          const [cx, cy] = pointsCenter(pts);
+          const placed = isRotated(el) ? rotatePoints(pts, cx, cy, angle) : pts;
+          const first = placed[0];
+          const last = placed[placed.length - 1];
+          const closed = el.polygon === true || (placed.length > 2 && Math.hypot(first[0] - last[0], first[1] - last[1]) < 1);
+          return [createElement('freedraw', { ...polylineBase, points: placed, closed })];
+        }
+        // Rotated shapes cannot be drawn rotated, so their outline becomes a closed polyline
+        if ((el.type === 'rectangle' || el.type === 'diamond' || el.type === 'ellipse') && isRotated(el)) {
+          const w = Number(el.width) || 0;
+          const h = Number(el.height) || 0;
+          const outline = rotatePoints(shapeOutlinePoints(el.type, w, h), w / 2, h / 2, angle);
+          return [createElement('freedraw', { ...polylineBase, points: outline, closed: true })];
+        }
+        if (el.type === 'freedraw' && isRotated(el) && pts.length > 1) {
+          const [cx, cy] = pointsCenter(pts);
+          return [createElement('freedraw', { ...el, ...compat, text: '', points: rotatePoints(pts, cx, cy, angle) })];
+        }
+
+        const normType = el.type === 'line' ? 'arrow' : el.type;
+        let resolvedX2 = el.x2;
+        let resolvedY2 = el.y2;
+        if (normType === 'arrow' && typeof resolvedX2 !== 'number' && pts.length > 1) {
+          const lastPt = pts[pts.length - 1];
+          resolvedX2 = (Number(el.x) || 0) + lastPt[0];
+          resolvedY2 = (Number(el.y) || 0) + lastPt[1];
+        }
+        const label = boundText.has(el.id) ? boundText.get(el.id) : el.text;
+        return [createElement(normType, {
+          ...el,
+          ...compat,
+          x2: resolvedX2,
+          y2: resolvedY2,
+          points: normType === 'freedraw' ? (Array.isArray(el.points) ? el.points : []) : [],
+          text: normType === 'arrow' ? '' : String(label ?? '')
+        })];
+      });
+    }
+
     function parseSceneJson(jsonString) {
       try {
         const data = JSON.parse(jsonString);
         if (!data || !Array.isArray(data.elements)) return null;
-        const validRaw = data.elements.filter(
-          el => el && !el.isDeleted && typeof el.type === 'string' && ALLOWED_ELEMENT_TYPES.has(el.type)
-        );
-        const elements = validRaw.map(el => {
-          const normType = el.type === 'line' ? 'arrow' : el.type;
-          let resolvedX2 = el.x2;
-          let resolvedY2 = el.y2;
-          if (normType === 'arrow' && typeof resolvedX2 !== 'number' && Array.isArray(el.points) && el.points.length > 1) {
-            const lastPt = el.points[el.points.length - 1];
-            if (Array.isArray(lastPt) && lastPt.length >= 2) {
-              resolvedX2 = (Number(el.x) || 0) + (Number(lastPt[0]) || 0);
-              resolvedY2 = (Number(el.y) || 0) + (Number(lastPt[1]) || 0);
-            }
-          }
-          return createElement(normType, {
-            ...el,
-            x2: resolvedX2,
-            y2: resolvedY2,
-            text: normType === 'arrow' ? '' : String(el.text ?? '')
-          });
-        });
+        const elements = normalizeImportedElements(data.elements);
 
         const appState = {};
         const raw = data.appState && typeof data.appState === 'object' ? data.appState : {};
@@ -5468,6 +5932,7 @@
 
     function syncUIWithSelection() {
       if (typeof document === 'undefined') return;
+      syncLibraryAddButton();
       const selected = state.elements.filter(el => state.selectedIds.has(el.id));
       const ref = selected[0] || state.defaults;
 
@@ -5658,8 +6123,15 @@
       window.addEventListener('dragover', e => e.preventDefault?.());
       window.addEventListener('drop', e => {
         e.preventDefault?.();
+        const libraryItemId = e.dataTransfer?.getData?.(LIBRARY_ITEM_MIME);
+        if (libraryItemId) {
+          const pt = screenToWorld(e.clientX, e.clientY);
+          insertLibraryItem(libraryItemId, pt.x, pt.y);
+          return;
+        }
         importSceneFiles(e.dataTransfer?.files);
       });
+      wireLibraryPanelDOM();
 
       // Dropdown toggles
       document.getElementById('templatesMenuBtn')?.addEventListener('click', e => {
@@ -5888,7 +6360,8 @@
       }
 
       // Open the last canvas from the server workspace, or fall back to a scratch template
-      restoreWorkspace();
+      restoreWorkspace().then(() => handleAddLibraryHash());
+      window.addEventListener('hashchange', () => handleAddLibraryHash());
       setInterval(autosaveTick, AUTOSAVE_INTERVAL_MS);
       document.addEventListener?.('visibilitychange', () => {
         if (document.visibilityState === 'hidden') flushSave();
@@ -6036,6 +6509,14 @@
         },
         async deleteCanvas(p, c) {
           await request('DELETE', canvasPath(p, c));
+        },
+        async readLibrary() {
+          const res = await request('GET', '/library');
+          return { text: await res.text(), modified: Number(res.headers.get('X-Modified')) || 0 };
+        },
+        async writeLibrary(text, expectedModified) {
+          const headers = Number.isFinite(expectedModified) ? { 'If-Unmodified-Since-Ms': String(expectedModified) } : {};
+          return (await request('PUT', '/library', { text, headers })).json();
         }
       };
     }
@@ -6043,6 +6524,7 @@
     // In-memory store with the same semantics as the server (unique names, 409 on stale writes)
     function createMemoryStore() {
       const projects = new Map();
+      const library = { text: null, modified: 0 };
       let clock = 1;
       const getProject = p => {
         if (!projects.has(p)) throw storeError(404, 'Project not found');
@@ -6120,6 +6602,17 @@
         async deleteCanvas(p, c) {
           getCanvas(p, c);
           getProject(p).delete(c);
+        },
+        async readLibrary() {
+          return { text: library.text ?? emptyLibraryText(), modified: library.modified };
+        },
+        async writeLibrary(text, expectedModified) {
+          if (Number.isFinite(expectedModified) && expectedModified !== library.modified) {
+            throw storeError(409, 'Library changed on disk');
+          }
+          library.text = String(text);
+          library.modified = clock++;
+          return { modified: library.modified };
         }
       };
     }
@@ -6211,6 +6704,7 @@
       updateHeaderButtons();
       setSaveStatus('scratch');
       renderProjectsPanel();
+      loadLibrary();
     }
 
     function canUseWorkspaceServer() {
@@ -6237,6 +6731,7 @@
         enterScratchMode();
         return false;
       }
+      await loadLibrary();
       const pref = readProjectsPanelPref();
       setProjectsPanelOpen(pref === null ? true : pref);
 
@@ -6573,12 +7068,20 @@
       const files = Array.from(fileList || []);
       if (files.length === 0) return;
       const ws = state.workspace;
-      if (!ws.store || !ws.projectId) {
-        importExcalidrawJson(await readFileText(files[0]));
-        return;
-      }
+      let sceneImported = false;
       for (const file of files) {
-        await importAsNewCanvas(ws.projectId, file.name, await readFileText(file));
+        const text = await readFileText(file);
+        // .excalidrawlib files go into the personal library, never onto a canvas
+        if (isLibraryFileText(file.name, text)) {
+          await importLibraryText(text, { libraryName: libraryNameFrom(file.name) });
+          continue;
+        }
+        if (!ws.store || !ws.projectId) {
+          if (!sceneImported) importExcalidrawJson(text);
+          sceneImported = true;
+          continue;
+        }
+        await importAsNewCanvas(ws.projectId, file.name, text);
       }
     }
 
@@ -7119,6 +7622,710 @@
       }, 1000 / fps);
     }
 
+    /* -------------------------------------------------------------------------
+     * 19. Personal Library (Excalidraw-compatible .excalidrawlib items shared by every canvas)
+     * ------------------------------------------------------------------------- */
+    const LIBRARY_LOCAL_KEY = 'excaliflow:library';
+    const LIBRARY_PANEL_KEY = 'excaliflow:libraryPanelOpen';
+    const LIBRARY_TOKEN_KEY = 'excaliflow:libraryToken';
+    const LIBRARY_ITEM_MIME = 'application/x-excaliflow-library-item';
+    const LIBRARY_MAX_ITEMS = 1000;
+    const LIBRARY_MAX_ELEMENTS = 2000;
+    const LIBRARY_SAVE_DELAY_MS = 300;
+    const LIBRARY_CATALOGUE_URL = 'https://libraries.excalidraw.com/';
+    // #addLibrary links are only followed to the official catalogue (host must be followed by '/')
+    const LIBRARY_URL_RE = /^https:\/\/libraries\.excalidraw\.com\/[^\s]*$/i;
+    const libraryThumbCache = new Map();
+    let renderedLibraryGroups = [];
+    let libraryIdCounter = 0;
+
+    function emptyLibraryText() {
+      return JSON.stringify({ type: 'excalidrawlib', version: 2, source: 'excaliflow', libraryItems: [] }, null, 2);
+    }
+
+    function newLibraryId(prefix) {
+      libraryIdCounter += 1;
+      return `${prefix}-${Date.now().toString(36)}-${libraryIdCounter.toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    // Library elements get their own ids (bindings remapped, bindings that leave the item dropped),
+    // so they never collide with scene ids in ShapeCache.
+    function rekeyLibraryElements(elements) {
+      const idMap = new Map(elements.map(el => [el.id, newLibraryId('lib')]));
+      return elements.map(el => {
+        const copy = JSON.parse(JSON.stringify(el));
+        copy.id = idMap.get(el.id);
+        for (const key of ['startBinding', 'endBinding']) {
+          const b = el[key];
+          copy[key] = b && idMap.has(b.elementId) ? { ...JSON.parse(JSON.stringify(b)), elementId: idMap.get(b.elementId) } : null;
+        }
+        return copy;
+      });
+    }
+
+    function sanitizeLibraryItem(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      // v1 libraries store each item as a bare element array
+      const rawElements = Array.isArray(raw) ? raw : raw.elements;
+      const elements = normalizeImportedElements(rawElements, LIBRARY_MAX_ELEMENTS);
+      if (elements.length === 0) return null;
+      const created = Number(raw.created);
+      return {
+        id: typeof raw.id === 'string' && /^[\w-]{1,64}$/.test(raw.id) ? raw.id : newLibraryId('item'),
+        name: typeof raw.name === 'string' ? raw.name.trim().slice(0, 120) : '',
+        // Which imported library the item came from ('' = added by the user); lets a whole library be removed
+        libraryName: typeof raw.libraryName === 'string' ? raw.libraryName.trim().slice(0, 80) : '',
+        created: Number.isFinite(created) && created > 0 ? created : Date.now(),
+        elements: rekeyLibraryElements(elements)
+      };
+    }
+
+    // Parses untrusted .excalidrawlib text (v1 `library` or v2 `libraryItems`). Returns { items, name } or null.
+    function parseLibraryJson(text) {
+      let data;
+      try {
+        data = JSON.parse(String(text));
+      } catch (err) {
+        return null;
+      }
+      if (!data || typeof data !== 'object') return null;
+      if (data.type !== undefined && data.type !== 'excalidrawlib') return null;
+      let rawItems;
+      if (Array.isArray(data.libraryItems)) rawItems = data.libraryItems;
+      else if (Array.isArray(data.library)) rawItems = data.library;
+      else return null;
+      const items = [];
+      const ids = new Set();
+      for (const raw of rawItems.slice(0, LIBRARY_MAX_ITEMS)) {
+        const item = sanitizeLibraryItem(raw);
+        if (!item) continue;
+        if (ids.has(item.id)) item.id = newLibraryId('item');
+        ids.add(item.id);
+        items.push(item);
+      }
+      return { items };
+    }
+
+    function isLibraryFileText(fileName, text) {
+      if (/\.excalidrawlib$/i.test(String(fileName || ''))) return true;
+      try {
+        const data = JSON.parse(String(text));
+        return Boolean(data && data.type === 'excalidrawlib');
+      } catch (err) {
+        return false;
+      }
+    }
+
+    // Content identity used for de-duplication: ids, seeds and nonces stripped, bindings as indices
+    function libraryItemContentKey(item) {
+      const index = new Map(item.elements.map((el, i) => [el.id, i]));
+      return JSON.stringify(item.elements.map(el => {
+        const { id, seed, versionNonce, startBinding, endBinding, ...rest } = el;
+        return [rest, startBinding ? index.get(startBinding.elementId) ?? null : null, endBinding ? index.get(endBinding.elementId) ?? null : null];
+      }));
+    }
+
+    // Excalidraw v2 format; arrows also carry points[] so Excalidraw can draw them
+    function serializeLibrary(items) {
+      return JSON.stringify({
+        type: 'excalidrawlib',
+        version: 2,
+        source: 'excaliflow',
+        libraryItems: items.map(item => ({
+          id: item.id,
+          status: 'unpublished',
+          name: item.name || '',
+          ...(item.libraryName ? { libraryName: item.libraryName } : {}),
+          created: item.created,
+          elements: item.elements.map(el => (el.type === 'arrow' && typeof el.x2 === 'number' && typeof el.y2 === 'number'
+            ? { ...el, points: [[0, 0], [el.x2 - el.x, el.y2 - el.y]] }
+            : el))
+        }))
+      }, null, 2);
+    }
+
+    function findLibraryItem(id) {
+      return state.library.items.find(item => item.id === id) || null;
+    }
+
+    /* ---- Storage backends: the workspace store (server or memory), else browser localStorage ---- */
+    const localLibraryBackend = {
+      kind: 'local',
+      async readLibrary() {
+        let text = null;
+        try {
+          text = localStorage.getItem(LIBRARY_LOCAL_KEY);
+        } catch (err) { /* storage unavailable: empty library */ }
+        return { text: text || emptyLibraryText(), modified: null };
+      },
+      async writeLibrary(text) {
+        try {
+          localStorage.setItem(LIBRARY_LOCAL_KEY, text);
+        } catch (err) {
+          throw storeError(0, 'browser storage is unavailable');
+        }
+        return { modified: null };
+      }
+    };
+
+    function getLibraryBackend() {
+      const store = state.workspace.store;
+      return store && typeof store.readLibrary === 'function' ? store : localLibraryBackend;
+    }
+
+    function resetLibraryUiState() {
+      state.library.selectedItemIds.clear();
+      libraryThumbCache.clear();
+    }
+
+    function loadLibrary() {
+      const lib = state.library;
+      const backend = getLibraryBackend();
+      clearTimeout(lib.saveTimer);
+      lib.loading = (async () => {
+        try {
+          const file = await backend.readLibrary();
+          const parsed = parseLibraryJson(file.text);
+          lib.items = parsed ? parsed.items : [];
+          lib.modified = Number.isFinite(file.modified) ? file.modified : null;
+        } catch (err) {
+          lib.items = [];
+          lib.modified = null;
+        }
+        lib.dirty = false;
+        resetLibraryUiState();
+        renderLibraryPanel();
+        return lib.items.length;
+      })();
+      return lib.loading;
+    }
+
+    function scheduleLibrarySave() {
+      const lib = state.library;
+      lib.dirty = true;
+      clearTimeout(lib.saveTimer);
+      lib.saveTimer = setTimeout(() => saveLibraryNow(), LIBRARY_SAVE_DELAY_MS);
+    }
+
+    // Writes the library; on a 409 (another tab or a git pull changed it) merges the disk copy in and retries once
+    async function saveLibraryNow() {
+      const lib = state.library;
+      clearTimeout(lib.saveTimer);
+      if (lib.saving) await lib.saving;
+      if (!lib.dirty) return true;
+      const backend = getLibraryBackend();
+      lib.saving = (async () => {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          lib.dirty = false;
+          try {
+            const res = await backend.writeLibrary(serializeLibrary(lib.items), lib.modified);
+            lib.modified = Number.isFinite(res?.modified) ? res.modified : null;
+            return true;
+          } catch (err) {
+            if (err.status === 409 && attempt === 0) {
+              try {
+                const disk = await backend.readLibrary();
+                lib.items = mergeLibraryItems(lib.items, parseLibraryJson(disk.text)?.items || []).items;
+                lib.modified = Number.isFinite(disk.modified) ? disk.modified : null;
+                continue;
+              } catch (readErr) { /* fall through to the failure toast */ }
+            }
+            lib.dirty = true;
+            showToast(`Library not saved: ${err.message}`);
+            return false;
+          }
+        }
+        return false;
+      })();
+      try {
+        return await lib.saving;
+      } finally {
+        lib.saving = null;
+        renderLibraryPanel();
+      }
+    }
+
+    // Appends `incoming` items that are not already present (by content), keeping `base` order first
+    function mergeLibraryItems(base, incoming, { prepend = false } = {}) {
+      const seen = new Set(base.map(libraryItemContentKey));
+      const ids = new Set(base.map(item => item.id));
+      const added = [];
+      let skipped = 0;
+      for (const item of incoming) {
+        const key = libraryItemContentKey(item);
+        if (seen.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        seen.add(key);
+        // Ids from another library can clash with different content already here
+        if (ids.has(item.id)) item.id = newLibraryId('item');
+        ids.add(item.id);
+        added.push(item);
+      }
+      const items = (prepend ? [...added, ...base] : [...base, ...added]).slice(0, LIBRARY_MAX_ITEMS);
+      return { items, added: added.length, skipped };
+    }
+
+    /* ---- Library operations (exported for tests) ---- */
+
+    // Saves the selection as one library item, translated so its bounds start at 0,0.
+    // Arrow bindings survive only when both ends are in the selection; others keep their drawn endpoints.
+    function addSelectionToLibrary(name = '') {
+      if (state.editingId) commitInlineEditor();
+      const selected = state.elements.filter(el => state.selectedIds.has(el.id));
+      if (selected.length === 0) {
+        showToast('Select something to add to the library');
+        return null;
+      }
+      const sceneMap = getElementMap();
+      const selectedIds = new Set(selected.map(el => el.id));
+      const copies = selected.map(el => {
+        const copy = JSON.parse(JSON.stringify(el));
+        if (el.type === 'arrow') {
+          const geom = getArrowGeometry(el, sceneMap);
+          if (copy.startBinding && !selectedIds.has(copy.startBinding.elementId)) {
+            copy.startBinding = null;
+            copy.x = geom.p0.x;
+            copy.y = geom.p0.y;
+          }
+          if (copy.endBinding && !selectedIds.has(copy.endBinding.elementId)) {
+            copy.endBinding = null;
+            copy.x2 = geom.p1.x;
+            copy.y2 = geom.p1.y;
+          }
+        }
+        return copy;
+      });
+      const extent = getElementsExtent(copies, getElementMap(copies));
+      const dx = -extent.minX;
+      const dy = -extent.minY;
+      for (const c of copies) {
+        c.x = (Number(c.x) || 0) + dx;
+        c.y = (Number(c.y) || 0) + dy;
+        if (typeof c.x2 === 'number') c.x2 += dx;
+        if (typeof c.y2 === 'number') c.y2 += dy;
+      }
+      const label = selected.map(el => String(el.text || '').trim()).find(Boolean) || '';
+      const item = {
+        id: newLibraryId('item'),
+        name: String(name || label.split('\n')[0] || `Item ${state.library.items.length + 1}`).slice(0, 120),
+        libraryName: '',
+        created: Date.now(),
+        elements: rekeyLibraryElements(copies)
+      };
+      const merged = mergeLibraryItems(state.library.items, [item], { prepend: true });
+      if (merged.added === 0) {
+        showToast('Already in your library');
+        return null;
+      }
+      state.library.items = merged.items;
+      scheduleLibrarySave();
+      renderLibraryPanel();
+      showToast('Added to library');
+      return item;
+    }
+
+    function getViewportCenterWorld() {
+      const w = typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1200;
+      const h = typeof window !== 'undefined' && window.innerHeight ? window.innerHeight : 800;
+      return screenToWorld(w / 2, h / 2);
+    }
+
+    // Drops a copy of a library item centred on (wx, wy) — the viewport centre when omitted. One undo step.
+    function insertLibraryItem(itemId, wx, wy) {
+      const item = findLibraryItem(itemId);
+      if (!item) return [];
+      if (state.editingId) commitInlineEditor();
+      if (!Number.isFinite(wx) || !Number.isFinite(wy)) {
+        const c = getViewportCenterWorld();
+        wx = c.x;
+        wy = c.y;
+      }
+      const extent = getElementsExtent(item.elements, getElementMap(item.elements));
+      const dx = Math.round(wx - (extent.minX + extent.maxX) / 2);
+      const dy = Math.round(wy - (extent.minY + extent.maxY) / 2);
+      pushHistory();
+      const clones = cloneElementsWithBindings(item.elements, dx, dy);
+      setTool('select');
+      syncUIWithSelection();
+      updateHeaderButtons();
+      return clones;
+    }
+
+    function removeLibraryItems(ids) {
+      const drop = new Set(ids || []);
+      const before = state.library.items.length;
+      state.library.items = state.library.items.filter(item => !drop.has(item.id));
+      for (const id of drop) {
+        state.library.selectedItemIds.delete(id);
+        libraryThumbCache.delete(id);
+      }
+      const removed = before - state.library.items.length;
+      if (removed > 0) {
+        scheduleLibrarySave();
+        renderLibraryPanel();
+      }
+      return removed;
+    }
+
+    // Removes every item that came from one imported library ('' = the user's own items)
+    function removeLibraryGroup(libraryName) {
+      const name = String(libraryName ?? '');
+      return removeLibraryItems(state.library.items.filter(item => (item.libraryName || '') === name).map(item => item.id));
+    }
+
+    // Items grouped by source library: the user's own items first, then libraries in import order
+    function getLibraryGroups(items = state.library.items) {
+      const groups = new Map();
+      for (const item of items) {
+        const key = item.libraryName || '';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(item);
+      }
+      const keys = [...groups.keys()].sort((a, b) => (a === '' ? -1 : b === '' ? 1 : 0));
+      return keys.map(key => ({ libraryName: key, title: key || 'My items', items: groups.get(key) }));
+    }
+
+    function renameLibraryItem(id, name) {
+      const item = findLibraryItem(id);
+      if (!item) return false;
+      item.name = String(name ?? '').trim().slice(0, 120);
+      scheduleLibrarySave();
+      renderLibraryPanel();
+      return true;
+    }
+
+    // Merges an untrusted .excalidrawlib into the library (new items first, duplicates skipped)
+    // Turns 'aws-serverless.excalidrawlib' or a catalogue URL into 'aws serverless'
+    function libraryNameFrom(fileOrUrl) {
+      let base = String(fileOrUrl || '').split(/[\\/]/).pop() || '';
+      try {
+        base = decodeURIComponent(base);
+      } catch (err) { /* keep the raw name */ }
+      return base.replace(/\.(excalidrawlib|json)$/i, '').replace(/[-_]+/g, ' ').trim().slice(0, 80);
+    }
+
+    async function importLibraryText(text, { libraryName = '' } = {}) {
+      const parsed = parseLibraryJson(text);
+      if (!parsed) {
+        showToast('Not a valid library file');
+        return null;
+      }
+      const groupName = String(libraryName || '').trim().slice(0, 80) || 'Imported';
+      for (const item of parsed.items) {
+        if (!item.libraryName) item.libraryName = groupName;
+      }
+      if (state.library.loading) await state.library.loading;
+      const merged = mergeLibraryItems(state.library.items, parsed.items, { prepend: true });
+      state.library.items = merged.items;
+      if (merged.added > 0) scheduleLibrarySave();
+      setLibraryPanelOpen(true);
+      renderLibraryPanel();
+      showToast(`Added ${merged.added} library item${merged.added === 1 ? '' : 's'}` +
+        (merged.skipped ? ` (${merged.skipped} already there)` : ''));
+      return { added: merged.added, skipped: merged.skipped };
+    }
+
+    // Downloads the library (or only `ids`) as .excalidrawlib and returns the text
+    function exportLibrary(ids = null) {
+      const pick = ids && ids.length ? new Set(ids) : null;
+      const items = pick ? state.library.items.filter(item => pick.has(item.id)) : state.library.items;
+      const text = serializeLibrary(items);
+      if (items.length === 0) {
+        showToast('The library is empty');
+        return text;
+      }
+      if (typeof Blob !== 'undefined') {
+        downloadBlob(new Blob([text], { type: 'application/json' }), 'library.excalidrawlib');
+        showToast(`Exported ${items.length} library item${items.length === 1 ? '' : 's'}`);
+      }
+      return text;
+    }
+
+    /* ---- libraries.excalidraw.com catalogue: "Browse" opens it, "#addLibrary=<url>" brings items back ---- */
+    function parseHashParams(hash) {
+      const params = new Map();
+      for (const part of String(hash || '').replace(/^#/, '').split('&')) {
+        if (!part) continue;
+        const eq = part.indexOf('=');
+        const k = eq < 0 ? part : part.slice(0, eq);
+        const v = eq < 0 ? '' : part.slice(eq + 1);
+        try {
+          params.set(decodeURIComponent(k), decodeURIComponent(v.replace(/\+/g, ' ')));
+        } catch (err) { /* malformed escape: ignore this pair */ }
+      }
+      return params;
+    }
+
+    function isAllowedLibraryUrl(url) {
+      return LIBRARY_URL_RE.test(String(url || ''));
+    }
+
+    function clearLocationHash() {
+      if (typeof history === 'undefined' || typeof location === 'undefined' || !history.replaceState) return;
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+
+    function openLibraryCatalogue() {
+      if (typeof window === 'undefined' || typeof location === 'undefined') return null;
+      let token = '';
+      try {
+        token = localStorage.getItem(LIBRARY_TOKEN_KEY) || '';
+        if (!token) {
+          token = newLibraryId('tok');
+          localStorage.setItem(LIBRARY_TOKEN_KEY, token);
+        }
+      } catch (err) {
+        token = newLibraryId('tok');
+      }
+      const referrer = location.origin + location.pathname;
+      const url = `${LIBRARY_CATALOGUE_URL}?target=_blank&referrer=${encodeURIComponent(referrer)}` +
+        `&useHash=true&token=${encodeURIComponent(token)}&theme=${state.theme === 'dark' ? 'dark' : 'light'}&version=2`;
+      window.open?.(url, '_blank', 'noopener');
+      return url;
+    }
+
+    // Handles "#addLibrary=<url>&token=…" from the catalogue's "Add to Excalidraw" button.
+    // Only https://libraries.excalidraw.com/ URLs are fetched, and the user confirms before anything is added.
+    async function handleAddLibraryHash(
+      hash = typeof location !== 'undefined' ? location.hash : '',
+      fetchFn = typeof fetch === 'function' ? fetch : null
+    ) {
+      const url = parseHashParams(hash).get('addLibrary');
+      if (!url) return false;
+      clearLocationHash();
+      if (!isAllowedLibraryUrl(url)) {
+        showToast('Library links are only accepted from libraries.excalidraw.com');
+        return false;
+      }
+      if (!fetchFn) return false;
+      try {
+        const res = await fetchFn(url, { credentials: 'omit', cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const parsed = parseLibraryJson(text);
+        if (!parsed || parsed.items.length === 0) {
+          showToast('That library has no usable items');
+          return false;
+        }
+        const fileName = decodeURIComponent(url.split('/').pop() || 'library');
+        if (typeof confirm === 'function' && !confirm(`Add ${parsed.items.length} item${parsed.items.length === 1 ? '' : 's'} from "${fileName}" to your library?`)) {
+          return false;
+        }
+        return Boolean(await importLibraryText(text, { libraryName: libraryNameFrom(url) }));
+      } catch (err) {
+        showToast(`Could not add library: ${err.message}`);
+        return false;
+      }
+    }
+
+    /* ---- Panel UI ---- */
+    function setLibraryPanelOpen(open) {
+      state.library.panelOpen = Boolean(open);
+      try {
+        localStorage.setItem(LIBRARY_PANEL_KEY, state.library.panelOpen ? '1' : '0');
+      } catch (err) { /* storage unavailable: preference just isn't remembered */ }
+      if (typeof document === 'undefined') return;
+      document.getElementById('libraryPanel')?.classList.toggle('collapsed', !state.library.panelOpen);
+      document.getElementById('libraryToggleBtn')?.classList.toggle('active', state.library.panelOpen);
+      if (state.library.panelOpen) renderLibraryPanel();
+    }
+
+    function toggleLibraryPanel() {
+      setLibraryPanelOpen(!state.library.panelOpen);
+    }
+
+    function readLibraryPanelPref() {
+      try {
+        return localStorage.getItem(LIBRARY_PANEL_KEY) === '1';
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function syncLibraryAddButton() {
+      if (typeof document === 'undefined') return;
+      const btn = document.getElementById('lpAddBtn');
+      if (btn) btn.disabled = state.selectedIds.size === 0;
+    }
+
+    // Renders an item into a small canvas once per item and theme (flow particles off)
+    function getLibraryThumbnail(item) {
+      const bg = getEffectiveCanvasBg();
+      const cached = libraryThumbCache.get(item.id);
+      if (cached && cached.bg === bg) return cached.canvas;
+      const W = 112;
+      const H = 72;
+      const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas?.getContext?.('2d');
+      if (!ctx) return null;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      if (canvas.style) {
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+      }
+      const map = getElementMap(item.elements);
+      const ext = getElementsExtent(item.elements, map);
+      const pad = 8;
+      const bw = Math.max(1, ext.maxX - ext.minX);
+      const bh = Math.max(1, ext.maxY - ext.minY);
+      const scale = Math.min((W - pad * 2) / bw, (H - pad * 2) / bh, 1.5);
+      const arrowGeoms = new Map();
+      for (const el of item.elements) {
+        if (el.type === 'arrow') arrowGeoms.set(el.id, getArrowGeometry(el, map));
+      }
+      const prevFlow = state.flowEnabled;
+      state.flowEnabled = false;
+      try {
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        ctx.translate(W / 2, H / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(-(ext.minX + ext.maxX) / 2, -(ext.minY + ext.maxY) / 2);
+        drawSceneLayer(ctx, item.elements, arrowGeoms, new Map(), 0, { canvasBg: bg, forExport: true }, null);
+        ctx.restore();
+      } catch (err) {
+        return null;
+      } finally {
+        state.flowEnabled = prevFlow;
+      }
+      libraryThumbCache.set(item.id, { bg, canvas });
+      return canvas;
+    }
+
+    function renderLibraryPanel() {
+      if (typeof document === 'undefined') return;
+      const lib = state.library;
+      const grid = document.getElementById('lpGrid');
+      if (!grid) return;
+      syncLibraryAddButton();
+      const count = document.getElementById('lpCount');
+      if (count) count.textContent = lib.items.length ? `· ${lib.items.length}` : '';
+      const selBar = document.getElementById('lpSelBar');
+      selBar?.classList.toggle('show', lib.selectedItemIds.size > 0);
+      const selCount = document.getElementById('lpSelCount');
+      if (selCount) selCount.textContent = `${lib.selectedItemIds.size} selected`;
+      if (!lib.panelOpen) return;
+
+      const q = lib.search.trim().toLowerCase();
+      const visible = q ? lib.items.filter(item => (item.name || '').toLowerCase().includes(q)) : lib.items;
+      if (visible.length === 0) {
+        grid.innerHTML = `<div class="lp-empty">${lib.items.length === 0
+          ? 'Your library is empty.<br>Select shapes and press <b>+ Add selection</b>, import a <b>.excalidrawlib</b> file, or browse the public libraries.'
+          : 'No items match your search.'}</div>`;
+        return;
+      }
+      const tile = item => {
+        const id = escapeHtml(item.id);
+        const name = escapeHtml(item.name || 'Untitled');
+        return `<div class="lp-item${lib.selectedItemIds.has(item.id) ? ' selected' : ''}" draggable="true" data-item="${id}" ` +
+          `title="${name} — click to insert, drag onto the canvas, Shift-click to select, double-click the name to rename">` +
+          `<button class="lp-del" data-del="${id}" title="Remove from library">✕</button>` +
+          `<div class="lp-thumb" data-thumb="${id}"></div><div class="lp-name">${name}</div></div>`;
+      };
+      const groups = getLibraryGroups(visible);
+      renderedLibraryGroups = groups.map(g => g.libraryName);
+      grid.innerHTML = groups.map((group, gi) =>
+        `<div class="lp-group-head"><span class="lp-group-title" title="${escapeHtml(group.title)}">${escapeHtml(group.title)}</span>` +
+        `<span class="lp-group-count">${group.items.length}</span>` +
+        `<button class="lp-group-del" data-del-group="${gi}" title="Remove ${escapeHtml(group.title)} from your library">Remove</button></div>` +
+        group.items.map(tile).join('')
+      ).join('');
+      grid.querySelectorAll?.('[data-thumb]').forEach(slot => {
+        const item = findLibraryItem(slot.getAttribute('data-thumb'));
+        const thumb = item && getLibraryThumbnail(item);
+        if (thumb) slot.appendChild(thumb);
+      });
+    }
+
+    function promptRenameLibraryItem(id) {
+      const item = findLibraryItem(id);
+      if (!item || typeof prompt !== 'function') return;
+      const name = prompt('Rename library item', item.name || '');
+      if (name !== null) renameLibraryItem(id, name);
+    }
+
+    // Thin DOM wrappers; the logic lives in the functions above
+    function wireLibraryPanelDOM() {
+      const byId = id => document.getElementById(id);
+      byId('libraryToggleBtn')?.addEventListener('click', toggleLibraryPanel);
+      byId('lpCloseBtn')?.addEventListener('click', () => setLibraryPanelOpen(false));
+      byId('lpAddBtn')?.addEventListener('click', () => addSelectionToLibrary());
+      byId('lpImportBtn')?.addEventListener('click', () => byId('lpFileInput')?.click());
+      byId('lpFileInput')?.addEventListener('change', e => {
+        const files = Array.from(e.target.files || []);
+        e.target.value = '';
+        importLibraryFiles(files);
+      });
+      byId('lpExportBtn')?.addEventListener('click', () => exportLibrary([...state.library.selectedItemIds]));
+      byId('lpDeleteBtn')?.addEventListener('click', () => {
+        const ids = [...state.library.selectedItemIds];
+        if (ids.length === 0) return;
+        if (typeof confirm === 'function' && !confirm(`Remove ${ids.length} item${ids.length === 1 ? '' : 's'} from your library?`)) return;
+        removeLibraryItems(ids);
+      });
+      byId('lpClearSelBtn')?.addEventListener('click', () => {
+        state.library.selectedItemIds.clear();
+        renderLibraryPanel();
+      });
+      byId('lpSearch')?.addEventListener('input', e => {
+        state.library.search = String(e.target.value || '');
+        renderLibraryPanel();
+      });
+      byId('lpBrowseBtn')?.addEventListener('click', openLibraryCatalogue);
+      const grid = byId('lpGrid');
+      grid?.addEventListener('click', e => {
+        const delBtn = e.target?.closest?.('[data-del]');
+        if (delBtn) {
+          e.stopPropagation?.();
+          removeLibraryItems([delBtn.getAttribute('data-del')]);
+          return;
+        }
+        const groupBtn = e.target?.closest?.('[data-del-group]');
+        if (groupBtn) {
+          const groupName = renderedLibraryGroups[Number(groupBtn.getAttribute('data-del-group'))];
+          if (groupName === undefined) return;
+          const count = state.library.items.filter(item => (item.libraryName || '') === groupName).length;
+          const title = groupName || 'My items';
+          if (typeof confirm === 'function' && !confirm(`Remove "${title}" (${count} item${count === 1 ? '' : 's'}) from your library?`)) return;
+          removeLibraryGroup(groupName);
+          showToast(`Removed ${title}`);
+          return;
+        }
+        const tile = e.target?.closest?.('[data-item]');
+        if (!tile) return;
+        const id = tile.getAttribute('data-item');
+        const sel = state.library.selectedItemIds;
+        if (e.shiftKey || e.metaKey || e.ctrlKey || sel.size > 0) {
+          if (sel.has(id)) sel.delete(id);
+          else sel.add(id);
+          renderLibraryPanel();
+          return;
+        }
+        insertLibraryItem(id);
+      });
+      grid?.addEventListener('dblclick', e => {
+        const tile = e.target?.closest?.('[data-item]');
+        if (tile && e.target?.closest?.('.lp-name')) promptRenameLibraryItem(tile.getAttribute('data-item'));
+      });
+      grid?.addEventListener('dragstart', e => {
+        const tile = e.target?.closest?.('[data-item]');
+        if (!tile || !e.dataTransfer) return;
+        e.dataTransfer.setData(LIBRARY_ITEM_MIME, tile.getAttribute('data-item'));
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+      if (readLibraryPanelPref()) setLibraryPanelOpen(true);
+    }
+
+    async function importLibraryFiles(fileList) {
+      for (const file of Array.from(fileList || [])) {
+        await importLibraryText(await readFileText(file), { libraryName: libraryNameFrom(file.name) });
+      }
+    }
+
     if (typeof window !== 'undefined') {
       Object.assign(window, {
         state,
@@ -7194,7 +8401,24 @@
         getStoryFocusSet,
         advanceStoryTween,
         getElementsBounds,
-        computeFitCamera
+        computeFitCamera,
+        normalizeImportedElements,
+        parseLibraryJson,
+        serializeLibrary,
+        loadLibrary,
+        saveLibraryNow,
+        addSelectionToLibrary,
+        insertLibraryItem,
+        removeLibraryItems,
+        removeLibraryGroup,
+        getLibraryGroups,
+        resolveStrokeColor,
+        renameLibraryItem,
+        importLibraryText,
+        importSceneFiles,
+        exportLibrary,
+        handleAddLibraryHash,
+        isAllowedLibraryUrl
       });
       window.addEventListener('DOMContentLoaded', initStudioDOM);
     }

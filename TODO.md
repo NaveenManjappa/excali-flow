@@ -31,6 +31,7 @@
 Product direction: Excaliflow is the fastest way to explain how a system behaves, not just to draw it. The motion is the product. Each item below makes that explanation richer, quicker to create, or easier to share.
 
 ### Done
+- [x] **Personal Library**: Excalidraw-style reusable items in `workspace/library.excalidrawlib`, a library panel (`L`), `.excalidrawlib` import/export and one-click adds from libraries.excalidraw.com.
 - [x] **Flow Stories**: step-by-step walkthroughs with spotlight, camera glide, captions, presenter mode (Shift+P), auto-drafted stories and 1080p story video export.
 
 ### Next, in order
