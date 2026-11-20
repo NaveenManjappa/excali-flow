@@ -48,6 +48,7 @@ WORKSPACE=~/Diagrams npm start
 - Canvases **autosave** about a second after each change. The dot next to the canvas name in the header shows the save state. `⌘S` saves immediately.
 - Undo history belongs to each canvas and resets when you switch.
 - If a canvas file changes on disk while it's open (for example after `git pull`), Excaliflow won't overwrite it. It offers **Reload from disk**, **Overwrite** or **Save as copy**.
+- **Clear canvas** (⋯ menu) removes everything on the open canvas after asking first, like Excalidraw's *Reset the canvas*. Press `⌘Z` to bring it back.
 - **Import as Canvas** (⋯ menu) or dropping `.excaliflow` / `.excalidraw` files onto the window adds them as new canvases in the current project.
 - Opening `index.html` directly (`file://`) still works, but only as an unsaved scratch canvas.
 
@@ -55,9 +56,9 @@ WORKSPACE=~/Diagrams npm start
 
 Open the **Library** panel with the book button in the top bar, or press `L`.
 
-- **Add:** select shapes (and the arrows between them) and click **+ Add selection**. An arrow whose other end isn't selected keeps its drawn shape but loses that binding.
+- **Add:** like Excalidraw, the panel has a **Personal Library** section with a **+** tile first. Select shapes (and the arrows between them) and click **+**. An arrow whose other end isn't selected keeps its drawn shape but loses that binding.
 - **Use:** click an item to drop it in the middle of the view, or drag it onto the canvas. Inserting is one undo step.
-- **Manage:** items are grouped by the library they came from (your own additions are under *My items*). **Remove** on a group's header removes that whole library. Hover an item and click ✕ to remove just that one, or Shift-click several and use **Remove** / **Export**. Double-click an item's name to rename it. The search box filters by name.
+- **Manage:** imported items appear under **Excalidraw Library**, grouped by the library they came from. **Remove** on a library's header removes that whole library. Click a section title to collapse it. Hover an item and click ✕ to remove just that one, or Shift-click several and use **Remove** / **Export**. Double-click an item's name to rename it. The search box filters by name.
 - **Import:** click **Import**, or drop `.excalidrawlib` files anywhere on the window. Both Excalidraw v1 and v2 libraries work. Colours, fills, opacity, labels inside shapes, lines and rotated parts are kept. Image elements aren't supported and are skipped. Items you already have are skipped.
 - **Browse:** **Browse libraries ↗** opens [libraries.excalidraw.com](https://libraries.excalidraw.com). Its *Add to Excalidraw* button sends the library back to Excaliflow, which asks before adding it. Only links to `libraries.excalidraw.com` are accepted.
 - **Export:** saves `library.excalidrawlib`, which Excalidraw can open too.

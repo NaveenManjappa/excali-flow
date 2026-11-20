@@ -1116,6 +1116,15 @@ function apiReq(method, url, { body, headers = {} } = {}) {
   } finally {
     fs.rmSync(libRoot, { recursive: true, force: true });
   }
+  // Clear canvas (Excalidraw's "Reset the canvas"): undoable, no-op when empty
+  app.state.elements.push(app.createElement('rectangle', { id: 'clr1', x: 0, y: 0 }), app.createElement('text', { id: 'clr2', x: 0, y: 90, text: 'hi', textAlign: 'left' }));
+  const clrCount = app.state.elements.length;
+  assert.strictEqual(app.clearCanvas({ confirmFirst: false }), true, 'Clear canvas removes everything');
+  assert.strictEqual(app.state.elements.length, 0);
+  assert.strictEqual(app.state.selectedIds.size, 0);
+  assert.strictEqual(app.clearCanvas({ confirmFirst: false }), false, 'Clearing an empty canvas does nothing');
+  app.undo();
+  assert.strictEqual(app.state.elements.length, clrCount, 'One undo brings the cleared canvas back');
   console.log('[PASS] 13. Personal Library: .excalidrawlib v1/v2 import (bound text, colours, lines, rotation), per-library removal, add/insert/undo, dedupe, store + /api/library persistence & 409 merge, #addLibrary allowlist verified');
 
   console.log('\nALL EXCALIFLOW VERIFICATION CHECKS PASSED SUCCESSFULLY!');

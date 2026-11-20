@@ -492,13 +492,91 @@
       font-size: 12px;
     }
 
-    .lp-actions #lpAddBtn {
-      flex: 1;
+    .lp-actions {
+      justify-content: flex-end;
     }
 
-    .lp-actions #lpAddBtn:disabled {
-      opacity: 0.45;
+    /* Excalidraw-style sections: Personal Library / Excalidraw Library */
+    .lp-section-head {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 2px 2px 2px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lp-section-head:first-child {
+      padding-top: 0;
+    }
+
+    .lp-chev {
+      font-size: 9px;
+      width: 10px;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+    }
+
+    .lp-section-head.collapsed .lp-chev {
+      transform: rotate(-90deg);
+    }
+
+    .lp-add-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 98px;
+      border: 1.5px dashed var(--accent);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--accent);
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .lp-add-tile .lp-plus {
+      font-size: 26px;
+      line-height: 1;
+      font-weight: 300;
+    }
+
+    .lp-add-tile:hover {
+      background: var(--surface-hover);
+    }
+
+    .lp-add-tile.disabled {
+      border-color: var(--divider);
+      color: var(--text-muted);
       cursor: default;
+    }
+
+    .lp-add-tile.disabled:hover {
+      background: transparent;
+    }
+
+    .lp-section-hint {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      padding: 2px 4px 4px;
+    }
+
+    .lp-section-hint button {
+      border: none;
+      background: none;
+      padding: 0;
+      font: inherit;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
     }
 
     .lp-search {
@@ -1476,7 +1554,7 @@
           <button id="btnLoadJson" class="ui-btn menu-item"><span>Import as Canvas</span><span>Open</span></button>
           <input type="file" id="jsonFileInput" accept=".json,.excaliflow,.excalidraw,.excalidrawlib" multiple style="display:none" />
           <div class="menu-sep"></div>
-          <button id="btnClearScene" class="ui-btn menu-item danger"><span>Clear Canvas</span><span>⌫</span></button>
+          <button id="btnClearScene" class="ui-btn menu-item danger" title="Remove everything from this canvas (undo with ⌘Z)"><span>Clear canvas</span><span>Reset</span></button>
         </div>
       </div>
     </div>
@@ -1501,7 +1579,6 @@
       <button id="lpCloseBtn" class="ui-btn" title="Close library (L)">✕</button>
     </div>
     <div class="lp-actions">
-      <button id="lpAddBtn" class="ui-btn primary" title="Add the selected elements to your library">+ Add selection</button>
       <button id="lpImportBtn" class="ui-btn" title="Import .excalidrawlib files">Import</button>
       <button id="lpExportBtn" class="ui-btn" title="Export the library (or the selected items) as .excalidrawlib">Export</button>
     </div>
@@ -1655,7 +1732,9 @@
     </div>
     <div class="v-divider"></div>
     <button id="hudDuplicateBtn" class="ui-btn" title="Duplicate (⌘D)">⧉</button>
-    <button id="hudDeleteBtn" class="ui-btn danger" title="Delete (⌫)">✕</button>
+    <button id="hudDeleteBtn" class="ui-btn danger" title="Delete selection (⌫)" aria-label="Delete selection">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    </button>
   </div>
 
   <!-- Bottom-Left Undo/Redo Pill (Excaliflow Standard Placement) -->
@@ -1911,7 +1990,8 @@
         saveTimer: null,
         panelOpen: false,
         search: '',
-        selectedItemIds: new Set()
+        selectedItemIds: new Set(),
+        collapsedSections: new Set()
       },
       // Open canvas file in the server-backed workspace (section 17); store is null in scratch mode
       workspace: {
@@ -4110,6 +4190,8 @@
       for (const id of state.selectedIds) {
         const el = elementsMap.get(id);
         if (!el || el.type === 'arrow') continue;
+        // Like Excalidraw, the box being typed into shows no selection outline or handles
+        if (el.id === state.editingId) continue;
         ctx.save();
         ctx.strokeStyle = accent;
         ctx.lineWidth = 1.4 / zoom;
@@ -4135,7 +4217,7 @@
       if (state.activeTool === 'select') {
         for (const id of portOwnerIds) {
           const el = elementsMap.get(id);
-          if (!el || !isNodeElement(el) || el.type === 'text') continue;
+          if (!el || !isNodeElement(el) || el.type === 'text' || el.id === state.editingId) continue;
           const ports = getQuickConnectPorts(el);
           for (const p of ports) {
             const isHoveredPort = state.hoveredPort &&
@@ -5032,6 +5114,8 @@
       if (!el || el.type === 'arrow' || typeof document === 'undefined') return;
       state.editingId = el.id;
       state.editingPreSnap = preSnap || snapshotScene();
+      // The selection toolbar may already be showing for this element; it must not cover the text being typed
+      updateQuickHudPosition();
       const wrap = document.getElementById('inlineEditorWrap');
       const ta = document.getElementById('inlineTextEditor');
       if (!wrap || !ta) return;
@@ -5686,6 +5770,28 @@
       syncUIWithSelection();
     }
 
+    // Excalidraw's "Reset the canvas": asks first, removes every element, and stays undoable.
+    // Story steps are kept (their focus just becomes empty); the camera is not touched.
+    function clearCanvas({ confirmFirst = true } = {}) {
+      closeAllDropdowns();
+      if (state.editingId) commitInlineEditor();
+      if (state.elements.length === 0) {
+        showToast('The canvas is already empty');
+        return false;
+      }
+      if (confirmFirst && typeof confirm === 'function' && !confirm('This will clear the whole canvas. Are you sure?')) return false;
+      stopStory();
+      pushHistory();
+      state.elements = [];
+      state.selectedIds.clear();
+      state.activePulses = [];
+      ShapeCache.clear();
+      syncUIWithSelection();
+      updateHeaderButtons();
+      showToast('Canvas cleared — press ⌘Z to undo');
+      return true;
+    }
+
     function importExcalidrawJson(jsonString) {
       closeAllDropdowns();
       const scene = parseSceneJson(jsonString);
@@ -5902,9 +6008,11 @@
 
       const first = selected[0];
       const isArrowOnly = selected.every(e => e.type === 'arrow');
+      // Morph / Pulse / + Next only make sense for shapes, not for plain text boxes
+      const isTextOnly = selected.every(e => e.type === 'text');
       const nodeCtrls = document.getElementById('hudNodeControls');
       const arrowCtrls = document.getElementById('hudArrowControls');
-      if (nodeCtrls) nodeCtrls.style.display = isArrowOnly ? 'none' : 'inline-flex';
+      if (nodeCtrls) nodeCtrls.style.display = isArrowOnly || isTextOnly ? 'none' : 'inline-flex';
       if (arrowCtrls) arrowCtrls.style.display = isArrowOnly ? 'inline-flex' : 'none';
 
       if (isArrowOnly) {
@@ -6207,14 +6315,7 @@
         e.target.value = '';
         importSceneFiles(files);
       });
-      document.getElementById('btnClearScene')?.addEventListener('click', () => {
-        closeAllDropdowns();
-        pushHistory();
-        state.elements = [];
-        state.selectedIds.clear();
-        ShapeCache.clear();
-        syncUIWithSelection();
-      });
+      document.getElementById('btnClearScene')?.addEventListener('click', () => clearCanvas());
 
       document.querySelectorAll('[data-quick-add]').forEach(btn => {
         btn.addEventListener('click', () => quickAddShape(btn.getAttribute('data-quick-add')));
@@ -7628,6 +7729,7 @@
     const LIBRARY_LOCAL_KEY = 'excaliflow:library';
     const LIBRARY_PANEL_KEY = 'excaliflow:libraryPanelOpen';
     const LIBRARY_TOKEN_KEY = 'excaliflow:libraryToken';
+    const LIBRARY_SECTIONS_KEY = 'excaliflow:librarySectionsCollapsed';
     const LIBRARY_ITEM_MIME = 'application/x-excaliflow-library-item';
     const LIBRARY_MAX_ITEMS = 1000;
     const LIBRARY_MAX_ELEMENTS = 2000;
@@ -8144,10 +8246,32 @@
       }
     }
 
+    // The "+" tile in Personal Library is live only while something is selected on the canvas
     function syncLibraryAddButton() {
       if (typeof document === 'undefined') return;
-      const btn = document.getElementById('lpAddBtn');
-      if (btn) btn.disabled = state.selectedIds.size === 0;
+      const tile = document.querySelector?.('#lpGrid [data-add-tile]');
+      if (!tile) return;
+      const disabled = state.selectedIds.size === 0;
+      tile.classList.toggle('disabled', disabled);
+      tile.title = disabled ? 'Select shapes on the canvas to add them to your library' : 'Add the selection to your library';
+    }
+
+    function readCollapsedLibrarySections() {
+      try {
+        return new Set(JSON.parse(localStorage.getItem(LIBRARY_SECTIONS_KEY) || '[]'));
+      } catch (err) {
+        return new Set();
+      }
+    }
+
+    function toggleLibrarySection(key) {
+      const collapsed = state.library.collapsedSections;
+      if (collapsed.has(key)) collapsed.delete(key);
+      else collapsed.add(key);
+      try {
+        localStorage.setItem(LIBRARY_SECTIONS_KEY, JSON.stringify([...collapsed]));
+      } catch (err) { /* preference just isn't remembered */ }
+      renderLibraryPanel();
     }
 
     // Renders an item into a small canvas once per item and theme (flow particles off)
@@ -8212,10 +8336,8 @@
 
       const q = lib.search.trim().toLowerCase();
       const visible = q ? lib.items.filter(item => (item.name || '').toLowerCase().includes(q)) : lib.items;
-      if (visible.length === 0) {
-        grid.innerHTML = `<div class="lp-empty">${lib.items.length === 0
-          ? 'Your library is empty.<br>Select shapes and press <b>+ Add selection</b>, import a <b>.excalidrawlib</b> file, or browse the public libraries.'
-          : 'No items match your search.'}</div>`;
+      if (q && visible.length === 0) {
+        grid.innerHTML = '<div class="lp-empty">No items match your search.</div>';
         return;
       }
       const tile = item => {
@@ -8226,14 +8348,32 @@
           `<button class="lp-del" data-del="${id}" title="Remove from library">✕</button>` +
           `<div class="lp-thumb" data-thumb="${id}"></div><div class="lp-name">${name}</div></div>`;
       };
-      const groups = getLibraryGroups(visible);
+      // Like Excalidraw: "Personal Library" (items you added, led by a + tile) and "Excalidraw Library"
+      // (items imported from files or libraries.excalidraw.com, sub-grouped so each library can be removed)
+      const section = (key, title, count, body) => {
+        const collapsed = lib.collapsedSections.has(key);
+        return `<div class="lp-section-head${collapsed ? ' collapsed' : ''}" data-toggle-section="${key}">` +
+          `<span class="lp-chev">▼</span><span>${title}</span><span class="lp-group-count">${count}</span></div>` +
+          (collapsed ? '' : body);
+      };
+      const personal = visible.filter(item => !item.libraryName);
+      const imported = visible.filter(item => item.libraryName);
+      const addTile = q ? '' : `<button class="lp-add-tile" data-add-tile="1"><span class="lp-plus">+</span><span>Add to library</span></button>`;
+      const personalBody = addTile + personal.map(tile).join('') +
+        (personal.length === 0 && !q ? '<div class="lp-section-hint">Select shapes on the canvas, then click <b>+</b> to save them here.</div>' : '');
+      const groups = getLibraryGroups(imported);
       renderedLibraryGroups = groups.map(g => g.libraryName);
-      grid.innerHTML = groups.map((group, gi) =>
-        `<div class="lp-group-head"><span class="lp-group-title" title="${escapeHtml(group.title)}">${escapeHtml(group.title)}</span>` +
-        `<span class="lp-group-count">${group.items.length}</span>` +
-        `<button class="lp-group-del" data-del-group="${gi}" title="Remove ${escapeHtml(group.title)} from your library">Remove</button></div>` +
-        group.items.map(tile).join('')
-      ).join('');
+      const importedBody = imported.length === 0
+        ? (q ? '' : '<div class="lp-section-hint">Import a <b>.excalidrawlib</b> file or <button data-browse="1">browse libraries</button> to add ready-made items.</div>')
+        : groups.map((group, gi) =>
+          `<div class="lp-group-head"><span class="lp-group-title" title="${escapeHtml(group.title)}">${escapeHtml(group.title)}</span>` +
+          `<span class="lp-group-count">${group.items.length}</span>` +
+          `<button class="lp-group-del" data-del-group="${gi}" title="Remove ${escapeHtml(group.title)} from your library">Remove</button></div>` +
+          group.items.map(tile).join('')
+        ).join('');
+      grid.innerHTML = section('personal', 'Personal Library', personal.length, personalBody) +
+        section('excalidraw', 'Excalidraw Library', imported.length, importedBody);
+      syncLibraryAddButton();
       grid.querySelectorAll?.('[data-thumb]').forEach(slot => {
         const item = findLibraryItem(slot.getAttribute('data-thumb'));
         const thumb = item && getLibraryThumbnail(item);
@@ -8253,7 +8393,7 @@
       const byId = id => document.getElementById(id);
       byId('libraryToggleBtn')?.addEventListener('click', toggleLibraryPanel);
       byId('lpCloseBtn')?.addEventListener('click', () => setLibraryPanelOpen(false));
-      byId('lpAddBtn')?.addEventListener('click', () => addSelectionToLibrary());
+      state.library.collapsedSections = readCollapsedLibrarySections();
       byId('lpImportBtn')?.addEventListener('click', () => byId('lpFileInput')?.click());
       byId('lpFileInput')?.addEventListener('change', e => {
         const files = Array.from(e.target.files || []);
@@ -8278,6 +8418,24 @@
       byId('lpBrowseBtn')?.addEventListener('click', openLibraryCatalogue);
       const grid = byId('lpGrid');
       grid?.addEventListener('click', e => {
+        if (e.target?.closest?.('[data-add-tile]')) {
+          if (state.selectedIds.size === 0) {
+            showToast('Select shapes on the canvas first, then click + to add them');
+            return;
+          }
+          state.library.collapsedSections.delete('personal');
+          addSelectionToLibrary();
+          return;
+        }
+        const sectionHead = e.target?.closest?.('[data-toggle-section]');
+        if (sectionHead) {
+          toggleLibrarySection(sectionHead.getAttribute('data-toggle-section'));
+          return;
+        }
+        if (e.target?.closest?.('[data-browse]')) {
+          openLibraryCatalogue();
+          return;
+        }
         const delBtn = e.target?.closest?.('[data-del]');
         if (delBtn) {
           e.stopPropagation?.();
@@ -8411,6 +8569,7 @@
         insertLibraryItem,
         removeLibraryItems,
         removeLibraryGroup,
+        clearCanvas,
         getLibraryGroups,
         resolveStrokeColor,
         renameLibraryItem,
